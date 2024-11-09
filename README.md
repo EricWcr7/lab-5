@@ -6,7 +6,7 @@ Jiacan Sun, Michael0Sun\
 Yi Fan (Eric) Wang, EricWcr7
 
 # User Stories
--Madeline, unsure of what to cook for her family at night, signed up for the MealMaster app and logged in.
+-Madeline, unsure of how to cook a dish for her family at night, signed up for the MealMaster app and logged in.
 
 -Madeline entered the dish she wanted to cook in the search box on the main interface and clicked confirm to start the search.
 
