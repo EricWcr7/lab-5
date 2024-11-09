@@ -18,6 +18,8 @@ import javax.swing.event.DocumentListener;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginState;
 import interface_adapter.login.LoginViewModel;
+import interface_adapter.signup.SignupState;
+import interface_adapter.signup.SignupViewModel;
 
 /**
  * The View for when the user is logging into the program.
@@ -34,7 +36,7 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
     private final JLabel passwordErrorField = new JLabel();
 
     private final JButton logIn;
-    private final JButton cancel;
+    private final JButton signUp;
     private LoginController loginController;
 
     public LoginView(LoginViewModel loginViewModel) {
@@ -53,8 +55,8 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         final JPanel buttons = new JPanel();
         logIn = new JButton("log in");
         buttons.add(logIn);
-        cancel = new JButton("cancel");
-        buttons.add(cancel);
+        signUp = new JButton("sign up");
+        buttons.add(signUp);
 
         logIn.addActionListener(
                 new ActionListener() {
@@ -71,7 +73,16 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
                 }
         );
 
-        cancel.addActionListener(this);
+        signUp.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
+                        if (evt.getSource().equals(signUp)) {
+                            loginController.switchToSignupView();
+                        }
+                    }
+                }
+        );
+
 
         usernameInputField.getDocument().addDocumentListener(new DocumentListener() {
 
