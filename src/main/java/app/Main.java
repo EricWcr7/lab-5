@@ -11,6 +11,8 @@ public class Main {
      * @param args unused arguments
      */
     public static void main(String[] args) {
+        final Integer width = 800;
+        final Integer height = 600;
         final AppBuilder appBuilder = new AppBuilder();
         // TODO: add the Logout Use Case to the app using the appBuilder
         final JFrame application = appBuilder
@@ -22,8 +24,8 @@ public class Main {
                                             .addChangePasswordUseCase()
                                             .addLogoutUseCase()
                                             .build();
-
         application.pack();
+        application.setSize(width, height);
         application.setVisible(true);
     }
 }
