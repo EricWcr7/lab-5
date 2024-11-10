@@ -10,7 +10,5 @@ public class RecipeSearchState {
     public String getSearchKeyword() {
         return searchKeyword;
     }
-
-
 }
 

@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,11 +22,22 @@ import java.util.List;
 public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
 
     private static final String API_URL = "https://www.themealdb.com/api/json/v1/1/search.php?s=";
+    private static final String FILE_IO_API_URL = "https://file.io";
     private static final int STATUS_CODE_OK = 200;
-    private static final String FILE_PATH = "recipes.json"; // 文件路径
+    private static final String FILE_PATH = "recipes.txt";
 
-    // 存储JsonObject类型的列表
     private final List<JsonObject> recipesJson = new ArrayList<>();
+
+    /**
+     * Fetches recipes for all alphabetical keywords (a-z) and stores them in a list.
+     */
+    public void fetchRecipesForAllKeywords() {
+        for (char keyword = 'a'; keyword <= 'z'; keyword++) {
+            fetchRecipesBySearchKeyword(String.valueOf(keyword));
+        }
+        // write file
+        writeRecipesToFile();
+    }
 
     /**
      * Fetches recipes based on the provided search keyword and adds each recipe's JsonObject to the list.
@@ -47,7 +59,6 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
             if (response.statusCode() == STATUS_CODE_OK) {
                 // Parse and store JSON response
                 parseAndStoreRawJson(response.body());
-                writeRecipesToFile(); // 将数据写入文件
             }
             else {
                 System.err.println("Error: Received HTTP " + response.statusCode() + " from API.");
@@ -70,36 +81,61 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
     public void parseAndStoreRawJson(String responseBody) {
         final JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();
         final JsonArray mealsArray = jsonObject.getAsJsonArray("meals");
-
-        if (mealsArray != null) {
-            recipesJson.clear(); // 清空之前的数据
-            for (int i = 0; i < mealsArray.size(); i++) {
-                final JsonObject mealObject = mealsArray.get(i).getAsJsonObject();
-                // 将 JsonObject 直接添加到列表中
-                recipesJson.add(mealObject);
-            }
+        for (int i = 0; i < mealsArray.size(); i++) {
+            final JsonObject mealObject = mealsArray.get(i).getAsJsonObject();
+            recipesJson.add(mealObject);
         }
     }
 
     /**
-     * Writes the list of recipes in JSON format to a file.
+     * Writes the list of recipes in JSON format to a file and uploads it to File.io.
      */
     public void writeRecipesToFile() {
         final File file = new File(FILE_PATH);
 
-        // 如果文件存在，则删除
+        // if exsists, delete file
         if (file.exists() && !file.delete()) {
             System.err.println("Error: Unable to delete existing file.");
-            // 删除失败后继续写入
         }
 
-        // 创建并写入新的文件
+        // create and write in the file
         try (FileWriter writer = new FileWriter(FILE_PATH)) {
             writer.write(recipesJson.toString());
             System.out.println("Recipes data written to file successfully.");
+            // upload file
+            uploadFileToFileIo();
         }
         catch (IOException e) {
             System.err.println("Error while writing to file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Uploads the generated file to File.io API.
+     */
+    private void uploadFileToFileIo() {
+        try {
+            final HttpClient client = HttpClient.newHttpClient();
+            final HttpRequest.BodyPublisher fileBody = HttpRequest.BodyPublishers.ofFile(Path.of(FILE_PATH));
+
+            final HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(FILE_IO_API_URL))
+                    .header("Content-Type", "multipart/form-data")
+                    .POST(fileBody)
+                    .build();
+
+            final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            // check status code
+            if (response.statusCode() == STATUS_CODE_OK) {
+                System.out.println("File uploaded successfully: " + response.body());
+            }
+            else {
+                System.err.println("Failed to upload file. Status code: " + response.statusCode());
+            }
+        }
+        catch (IOException | InterruptedException e) {
+            System.err.println("Error during file upload: " + e.getMessage());
+            Thread.currentThread().interrupt();
         }
     }
 

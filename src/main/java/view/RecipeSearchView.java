@@ -102,9 +102,10 @@ public class RecipeSearchView extends JPanel implements PropertyChangeListener {
                 }
         );
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-
+//    @Override
+//    public void propertyChange(PropertyChangeEvent evt) {
+//
+//    }
     }
 }
 
