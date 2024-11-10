@@ -20,9 +20,10 @@ import interface_adapter.recipe_search.RecipeSearchController;
 import interface_adapter.recipe_search.RecipeSearchState;
 import interface_adapter.recipe_search.RecipeSearchViewModel;
 
-public class RecipeSearchView extends JPanel implements PropertyChangeListener {
+//public class RecipeSearchView extends JPanel implements PropertyChangeListener {
+public class RecipeSearchView extends JPanel {
 
-    private final String viewName = "recipe search";
+    private final String viewName = "search recipe";
     private final RecipeSearchViewModel recipeSearchViewModel;
     private RecipeSearchController recipeSearchController;
     private LogoutController logoutController;
@@ -36,7 +37,7 @@ public class RecipeSearchView extends JPanel implements PropertyChangeListener {
 
     public RecipeSearchView(RecipeSearchViewModel recipeSearchViewModel) {
         this.recipeSearchViewModel = recipeSearchViewModel;
-        this.recipeSearchViewModel.addPropertyChangeListener(this);
+//        this.recipeSearchViewModel.addPropertyChangeListener(this);
 
         final JPanel searchPanel = new JPanel();
         search = new JButton("Search");
@@ -107,5 +108,8 @@ public class RecipeSearchView extends JPanel implements PropertyChangeListener {
 //
 //    }
     }
+
+    public String getViewName() {
+        return viewName; }
 }
 

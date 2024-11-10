@@ -7,7 +7,9 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import data_access.InMemoryUserDataAccessObject;
+import entity.CommonRecipeFactory;
 import entity.CommonUserFactory;
+import entity.RecipeFactory;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.change_password.ChangePasswordController;
@@ -21,6 +23,9 @@ import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
+import interface_adapter.recipe_search.RecipeSearchController;
+import interface_adapter.recipe_search.RecipeSearchPresenter;
+import interface_adapter.recipe_search.RecipeSearchViewModel;
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
 import use_case.change_password.ChangePasswordOutputBoundary;
@@ -33,11 +38,14 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
+import use_case.recipe_search.RecipeSearchInputBoundary;
+import use_case.recipe_search.RecipeSearchInteractor;
+import use_case.recipe_search.RecipeSearchOutputBoundary;
 import view.LoggedInView;
 import view.LoginView;
 import view.SignupView;
 import view.ViewManager;
-
+import view.RecipeSearchView;
 /**
  * The AppBuilder class is responsible for putting together the pieces of
  * our CA architecture; piece by piece.
@@ -54,6 +62,7 @@ public class AppBuilder {
     private final CardLayout cardLayout = new CardLayout();
     // thought question: is the hard dependency below a problem?
     private final UserFactory userFactory = new CommonUserFactory();
+    private final RecipeFactory recipeFactory = new CommonRecipeFactory();
     private final ViewManagerModel viewManagerModel = new ViewManagerModel();
     private final ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
@@ -66,6 +75,8 @@ public class AppBuilder {
     private LoggedInViewModel loggedInViewModel;
     private LoggedInView loggedInView;
     private LoginView loginView;
+    private RecipeSearchView recipeSearchView;
+    private RecipeSearchViewModel recipeSearchViewModel;
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
@@ -105,6 +116,16 @@ public class AppBuilder {
     }
 
     /**
+     * Adds the RecipeSearch View to the application.
+     * @return this builder
+     */
+    public AppBuilder addRecipeSearchView() {
+        recipeSearchViewModel = new RecipeSearchViewModel();
+        recipeSearchView = new RecipeSearchView(recipeSearchViewModel);
+        cardPanel.add(recipeSearchView, recipeSearchView.getViewName());
+        return this;
+    }
+    /**
      * Adds the Signup Use Case to the application.
      * @return this builder
      */
@@ -125,7 +146,7 @@ public class AppBuilder {
      */
     public AppBuilder addLoginUseCase() {
         final LoginOutputBoundary loginOutputBoundary = new LoginPresenter(viewManagerModel,
-                loggedInViewModel, loginViewModel, signupViewModel);
+                recipeSearchViewModel, loginViewModel, signupViewModel);
         final LoginInputBoundary loginInteractor = new LoginInteractor(
                 userDataAccessObject, loginOutputBoundary);
 
@@ -167,6 +188,21 @@ public class AppBuilder {
         return this;
     }
 
+//    /**
+//     * Adds the RecipeSearch Use Case to the application.
+//     * @return this builder
+//     */
+//    public AppBuilder addRecipeSearchUseCase() {
+//        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
+//                loggedInViewModel, loginViewModel);
+//
+//        final LogoutInputBoundary logoutInteractor =
+//                new LogoutInteractor(userDataAccessObject, logoutOutputBoundary);
+//
+//        final LogoutController logoutController = new LogoutController(logoutInteractor);
+//        loggedInView.setLogoutController(logoutController);
+//        return this;
+//    }
     /**
      * Creates the JFrame for the application and initially sets the SignupView to be displayed.
      * @return the application
