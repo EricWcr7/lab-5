@@ -178,13 +178,13 @@ public class AppBuilder {
      */
     public AppBuilder addLogoutUseCase() {
         final LogoutOutputBoundary logoutOutputBoundary = new LogoutPresenter(viewManagerModel,
-                loggedInViewModel, loginViewModel);
+                recipeSearchViewModel, loginViewModel);
 
         final LogoutInputBoundary logoutInteractor =
                 new LogoutInteractor(userDataAccessObject, logoutOutputBoundary);
 
         final LogoutController logoutController = new LogoutController(logoutInteractor);
-        loggedInView.setLogoutController(logoutController);
+        recipeSearchView.setLogoutController(logoutController);
         return this;
     }
 

@@ -15,6 +15,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import interface_adapter.change_password.LoggedInState;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.recipe_search.RecipeSearchController;
 import interface_adapter.recipe_search.RecipeSearchState;
@@ -103,6 +104,15 @@ public class RecipeSearchView extends JPanel {
                 }
         );
 
+        logOut.addActionListener(
+                // This creates an anonymous subclass of ActionListener and instantiates it.
+                evt -> {
+                    if (evt.getSource().equals(logOut)) {
+                        this.logoutController.execute();
+                    }
+                }
+        );
+
 //    @Override
 //    public void propertyChange(PropertyChangeEvent evt) {
 //
@@ -111,5 +121,10 @@ public class RecipeSearchView extends JPanel {
 
     public String getViewName() {
         return viewName; }
+
+    public void setLogoutController(LogoutController logoutController) {
+        this.logoutController = logoutController;
+    }
 }
+
 
