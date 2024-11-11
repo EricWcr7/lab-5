@@ -1,34 +1,36 @@
 package entity;
 
-import java.util.Map;
-
 /**
- * The representation of a recipe in our program.
+ * The representation of a recipe in the program.
  */
 public interface Recipe {
 
     /**
-     * Returns the recipe name of the user.
-     * @return the recipe name of the user.
+     * Gets the ID of the recipe.
+     *
+     * @return the ID of the recipe
      */
-    String getRecipeName();
+    String getId();
 
     /**
-     * Returns the recipe ingredients, (ex: mozzarella balls, 200g) of the user.
-     * @return the recipe ingredients of the user.
+     * Gets the name of the recipe.
+     *
+     * @return the name of the recipe
      */
-    Map<String, String> getRecipeIngredients();
+    String getName();
 
     /**
-     * Returns the recipe instructions of the user.
-     * @return the recipe instructions of the user.
+     * Gets the category of the recipe.
+     *
+     * @return the category of the recipe
      */
-    String getRecipeInstructions();
+    String getCategory();
 
     /**
-     * Returns the username of the user.
-     * @return the username of the user.
+     * Gets the cooking instructions for the recipe.
+     *
+     * @return the cooking instructions
      */
-    String getCreator();
+    String getInstructions();
 
 }
