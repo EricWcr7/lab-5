@@ -16,6 +16,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import interface_adapter.change_password.LoggedInState;
+import interface_adapter.login.LoginController;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.recipe_search.RecipeSearchController;
 import interface_adapter.recipe_search.RecipeSearchState;
@@ -38,7 +39,8 @@ public class RecipeSearchView extends JPanel {
 
     public RecipeSearchView(RecipeSearchViewModel recipeSearchViewModel) {
         this.recipeSearchViewModel = recipeSearchViewModel;
-//        this.recipeSearchViewModel.addPropertyChangeListener(this);
+
+        //this.recipeSearchViewModel.addPropertyChangeListener(this);
 
         final JPanel searchPanel = new JPanel();
         search = new JButton("Search");
@@ -96,9 +98,13 @@ public class RecipeSearchView extends JPanel {
                             // 根据这些数据开始run usecase
                             final RecipeSearchState currentState = recipeSearchViewModel.getState();
 
-                            recipeSearchController.execute(
-                                    currentState.getSearchKeyword()
-                            );
+//                            recipeSearchController.execute(
+//                                    currentState.getSearchKeyword()
+//                            );
+
+                            recipeSearchController.switchToSearchedView();
+                            System.out.println("Button clicked!");
+
                         }
                     }
                 }
@@ -116,14 +122,21 @@ public class RecipeSearchView extends JPanel {
 //    @Override
 //    public void propertyChange(PropertyChangeEvent evt) {
 //
+//        }
+//
 //    }
-    }
+}
 
     public String getViewName() {
-        return viewName; }
+        return viewName;
+    }
 
     public void setLogoutController(LogoutController logoutController) {
         this.logoutController = logoutController;
+    }
+
+    public void setRecipeSearchController(RecipeSearchController recipeSearchController) {
+        this.recipeSearchController = recipeSearchController;
     }
 }
 

@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import data_access.InMemoryUserDataAccessObject;
+import data_access.RecipeDataAccessObject;
 import entity.CommonRecipeFactory;
 import entity.CommonUserFactory;
 import entity.RecipeFactory;
@@ -20,6 +21,7 @@ import interface_adapter.login.LoginPresenter;
 import interface_adapter.login.LoginViewModel;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.logout.LogoutPresenter;
+import interface_adapter.recipe_searched.RecipeSearchedViewModel;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
@@ -41,11 +43,8 @@ import use_case.signup.SignupOutputBoundary;
 import use_case.recipe_search.RecipeSearchInputBoundary;
 import use_case.recipe_search.RecipeSearchInteractor;
 import use_case.recipe_search.RecipeSearchOutputBoundary;
-import view.LoggedInView;
-import view.LoginView;
-import view.SignupView;
-import view.ViewManager;
-import view.RecipeSearchView;
+import view.*;
+
 /**
  * The AppBuilder class is responsible for putting together the pieces of
  * our CA architecture; piece by piece.
@@ -68,6 +67,7 @@ public class AppBuilder {
 
     // thought question: is the hard dependency below a problem?
     private final InMemoryUserDataAccessObject userDataAccessObject = new InMemoryUserDataAccessObject();
+    private final RecipeDataAccessObject recipeDataAccessObject = new RecipeDataAccessObject();
 
     private SignupView signupView;
     private SignupViewModel signupViewModel;
@@ -77,6 +77,9 @@ public class AppBuilder {
     private LoginView loginView;
     private RecipeSearchView recipeSearchView;
     private RecipeSearchViewModel recipeSearchViewModel;
+
+    private RecipeSearchedView recipeSearchedView;
+    private RecipeSearchedViewModel recipeSearchedViewModel;
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
@@ -125,6 +128,14 @@ public class AppBuilder {
         cardPanel.add(recipeSearchView, recipeSearchView.getViewName());
         return this;
     }
+
+    public AppBuilder addRecipeSearchedView() {
+        recipeSearchedViewModel = new RecipeSearchedViewModel();
+        recipeSearchedView = new RecipeSearchedView(recipeSearchedViewModel);
+        cardPanel.add(recipeSearchedView, recipeSearchedView.getViewName());
+        return this;
+    }
+
     /**
      * Adds the Signup Use Case to the application.
      * @return this builder
@@ -188,21 +199,21 @@ public class AppBuilder {
         return this;
     }
 
-//    /**
-//     * Adds the RecipeSearch Use Case to the application.
-//     * @return this builder
-//     */
-//    public AppBuilder addRecipeSearchUseCase() {
-//        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
-//                loggedInViewModel, loginViewModel);
-//
-//        final LogoutInputBoundary logoutInteractor =
-//                new LogoutInteractor(userDataAccessObject, logoutOutputBoundary);
-//
-//        final LogoutController logoutController = new LogoutController(logoutInteractor);
-//        loggedInView.setLogoutController(logoutController);
-//        return this;
-//    }
+    /**
+     * Adds the RecipeSearch Use Case to the application.
+     * @return this builder
+     */
+    public AppBuilder addRecipeSearchUseCase() {
+        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
+                recipeSearchedViewModel);
+
+        final RecipeSearchInputBoundary recipeSearchInteractor =
+                new RecipeSearchInteractor(recipeDataAccessObject, recipeSearchOutputBoundary);
+        final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
+
+        recipeSearchView.setRecipeSearchController(recipeSearchController);
+        return this;
+    }
     /**
      * Creates the JFrame for the application and initially sets the SignupView to be displayed.
      * @return the application
@@ -218,4 +229,6 @@ public class AppBuilder {
 
         return application;
     }
+
+
 }
