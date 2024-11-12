@@ -15,17 +15,17 @@ import use_case.signup.SignupOutputData;
 public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
 
     private final RecipeSearchViewModel recipeSearchViewModel;
-    // private final SearchResultViewModel searchResultViewModel;
+    private final SearchResultViewModel searchResultViewModel;
     private final ViewManagerModel viewManagerModel;
-    private final LoginViewModel loginViewModel;
+    // private final LoginViewModel loginViewModel;
 
     public RecipeSearchPresenter(ViewManagerModel viewManagerModel,
                                  RecipeSearchViewModel recipeSearchViewModel,
-                                 LoginViewModel loginViewModel) {
+                                 SearchResultViewModel searchResultViewModel) {
         this.viewManagerModel = viewManagerModel;
         this.recipeSearchViewModel = recipeSearchViewModel;
-        this.loginViewModel = loginViewModel;
-        // this.searchResultViewModel = searchResultViewModel;
+        // this.loginViewModel = loginViewModel;
+        this.searchResultViewModel = searchResultViewModel;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
 
     @Override
     public void switchToSearchResultView() {
-        viewManagerModel.setState(loginViewModel.getViewName());
+        viewManagerModel.setState(searchResultViewModel.getViewName());
         viewManagerModel.firePropertyChanged();
     }
 }

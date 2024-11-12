@@ -43,11 +43,8 @@ import use_case.signup.SignupOutputBoundary;
 import use_case.recipe_search.RecipeSearchInputBoundary;
 import use_case.recipe_search.RecipeSearchInteractor;
 import use_case.recipe_search.RecipeSearchOutputBoundary;
-import view.LoggedInView;
-import view.LoginView;
-import view.SignupView;
-import view.ViewManager;
-import view.RecipeSearchView;
+import view.*;
+
 /**
  * The AppBuilder class is responsible for putting together the pieces of
  * our CA architecture; piece by piece.
@@ -80,6 +77,7 @@ public class AppBuilder {
     private LoginView loginView;
     private RecipeSearchView recipeSearchView;
     private RecipeSearchViewModel recipeSearchViewModel;
+    private SearchResultView searchResultView;
     private SearchResultViewModel searchResultViewModel;
 
     public AppBuilder() {
@@ -130,7 +128,24 @@ public class AppBuilder {
         searchResultViewModel = new SearchResultViewModel();
 
         final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
-                recipeSearchViewModel, loginViewModel);
+                recipeSearchViewModel, searchResultViewModel);
+
+        final RecipeSearchInputBoundary recipesearchInteractor =
+                new RecipeSearchInteractor(recipeDataAccessObject, recipeSearchOutputBoundary);
+
+        final RecipeSearchController recipesearchController = new RecipeSearchController(recipesearchInteractor);
+        recipeSearchView.setRecipeSearchController(recipesearchController);
+        return this;
+    }
+
+    public AppBuilder addSearchResultView() {
+        searchResultViewModel = new SearchResultViewModel();
+        searchResultView = new SearchResultView(recipeSearchViewModel);
+        cardPanel.add(searchResultView, searchResultView.getViewName());
+        searchResultViewModel = new SearchResultViewModel();
+
+        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
+                recipeSearchViewModel, searchResultViewModel);
 
         final RecipeSearchInputBoundary recipesearchInteractor =
                 new RecipeSearchInteractor(recipeDataAccessObject, recipeSearchOutputBoundary);

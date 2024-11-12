@@ -20,6 +20,7 @@ public class Main {
                                             .addSignupView()
                                             .addLoggedInView()
                                             .addRecipeSearchView()
+                                            .addSearchResultView()
                                             .addSignupUseCase()
                                             .addLoginUseCase()
                                             .addChangePasswordUseCase()
