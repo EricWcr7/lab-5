@@ -178,13 +178,13 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         System.out.println("Uploading file to File.io with Bearer Auth.");
         try {
             final HttpClient client = HttpClient.newHttpClient();
-            String bearerToken = "Meal Master"; // Replace with your actual Bearer token
+            String bearerToken = "Meal Master"; // Replace this with your actual token
 
-            // Build the multipart form data request
+            // Use multipart form-data and specify the "file" part as expected
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(FILE_IO_API_URL))
                     .header("Authorization", "Bearer " + bearerToken)
-                    .header("Content-Type", "multipart/form-data")
+                    .header("Content-Type", "multipart/form-data; boundary=----WebKitFormBoundary")
                     .POST(ofFileUpload(Path.of(FILE_PATH)))
                     .build();
 
@@ -194,7 +194,7 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
                 System.out.println("File uploaded successfully: " + response.body());
             } else {
                 System.err.println("Failed to upload file. Status code: " + response.statusCode());
-                System.err.println("Response body: " + response.body()); // Print the error response for debugging
+                System.err.println("Response body: " + response.body());
             }
         } catch (IOException | InterruptedException e) {
             System.err.println("Error during file upload: " + e.getMessage());
@@ -202,13 +202,11 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         }
     }
 
-    // Helper method to handle file upload as multipart/form-data
     public static HttpRequest.BodyPublisher ofFileUpload(Path path) throws IOException {
         var boundary = "----WebKitFormBoundary";
         var fileBytes = Files.readAllBytes(path);
         var byteArrays = new ArrayList<byte[]>();
 
-        // Add the file as 'file' field in multipart form-data
         byteArrays.add(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"file\"; filename=\""
                 + path.getFileName() + "\"\r\nContent-Type: application/json\r\n\r\n").getBytes(StandardCharsets.UTF_8));
         byteArrays.add(fileBytes);
@@ -216,5 +214,4 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
 
         return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
     }
-
 }
