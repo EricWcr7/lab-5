@@ -18,6 +18,7 @@ import interface_adapter.change_password.ChangePasswordController;
 import interface_adapter.change_password.ChangePasswordPresenter;
 import interface_adapter.change_password.LoggedInViewModel;
 import interface_adapter.choose_recipe.ChooseRecipeViewModel;
+import interface_adapter.display_recipe.DisplayRecipeViewModel;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginPresenter;
 import interface_adapter.login.LoginViewModel;
@@ -29,9 +30,6 @@ import interface_adapter.signup.SignupViewModel;
 import interface_adapter.recipe_search.RecipeSearchController;
 import interface_adapter.recipe_search.RecipeSearchPresenter;
 import interface_adapter.recipe_search.RecipeSearchViewModel;
-import interface_adapter.choose_recipe.ChooseRecipeController;
-import interface_adapter.choose_recipe.ChooseRecipePresenter;
-import interface_adapter.choose_recipe.ChooseRecipeViewModel;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuInputBoundary;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuInteractor;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuOutputBoundary;
@@ -86,6 +84,8 @@ public class AppBuilder {
     private RecipeSearchViewModel recipeSearchViewModel;
     private ChooseRecipeView chooseRecipeView;
     private ChooseRecipeViewModel chooseRecipeViewModel;
+    private DisplayRecipeView displayRecipeView;
+    private DisplayRecipeViewModel displayRecipeViewModel;
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
@@ -143,6 +143,17 @@ public class AppBuilder {
         chooseRecipeViewModel = new ChooseRecipeViewModel();
         chooseRecipeView = new ChooseRecipeView(chooseRecipeViewModel);
         cardPanel.add(chooseRecipeView, chooseRecipeView.getViewName());
+        return this;
+    }
+
+    /**
+     * Adds the Display Recipe View to the application.
+     * @return this builder
+     */
+    public AppBuilder addDisplayOneRecipeView() {
+        displayRecipeViewModel = new DisplayRecipeViewModel();
+        displayRecipeView = new DisplayRecipeView(displayRecipeViewModel);
+        cardPanel.add(displayRecipeView, displayRecipeView.getViewName());
         return this;
     }
 
@@ -257,4 +268,6 @@ public class AppBuilder {
 
         return application;
     }
+
+
 }
