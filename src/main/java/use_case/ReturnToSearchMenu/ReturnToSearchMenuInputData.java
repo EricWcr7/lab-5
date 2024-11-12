@@ -1,9 +1,9 @@
-package use_case.recipe_search;
+package use_case.ReturnToSearchMenu;
 
-public class RecipeSearchOutputData {
+public class ReturnToSearchMenuInputData {
     private final String searchKeyword;
 
-    public RecipeSearchOutputData(String searchKeyword) {
+    public ReturnToSearchMenuInputData(String searchKeyword) {
         this.searchKeyword = searchKeyword;
     }
 

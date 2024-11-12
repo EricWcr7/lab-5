@@ -11,14 +11,14 @@ public interface RecipeSearchOutputBoundary {
      */
     void prepareSuccessView(RecipeSearchOutputData outputData);
 
-    /**
-     * Prepares the failure view for the Signup Use Case.
-     * @param errorMessage the explanation of the failure
-     */
-    void prepareFailView(String errorMessage);
+//    /**
+//     * Prepares the failure view for the Signup Use Case.
+//     * @param errorMessage the explanation of the failure
+//     */
+//    void prepareFailView(String errorMessage);
+//
+//    /**
+//     * Switches to the Login View.
+//     */
 
-    /**
-     * Switches to the Login View.
-     */
-    void switchToLoginView();
 }
