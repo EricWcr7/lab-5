@@ -5,7 +5,6 @@ import interface_adapter.choose_recipe.ChooseRecipeState;
 import interface_adapter.choose_recipe.ChooseRecipeViewModel;
 import use_case.recipe_search.RecipeSearchOutputBoundary;
 import use_case.recipe_search.RecipeSearchOutputData;
-import view.ChooseRecipeView;
 
 public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
     private final RecipeSearchViewModel recipeSearchViewModel;
@@ -21,12 +20,14 @@ public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
     }
 
     public void prepareSuccessView(RecipeSearchOutputData outputData) {
-//        final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
-//        chooseRecipeState.setSearchKeyword(outputData.getSearchKeyword());
-//        this.chooseRecipeViewModel.setState(chooseRecipeState);
-//        this.chooseRecipeViewModel.firePropertyChanged();
+        final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
+        chooseRecipeState.setSearchKeyword(outputData.getSearchKeyword());
+        this.chooseRecipeViewModel.setState(chooseRecipeState);
+        this.chooseRecipeViewModel.firePropertyChanged();
 
         this.viewManagerModel.setState(chooseRecipeViewModel.getViewName());
         this.viewManagerModel.firePropertyChanged();
     }
+
+
 }

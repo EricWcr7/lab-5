@@ -16,4 +16,8 @@ public class ChooseRecipeState {
         this.searchKeyword = searchKeyword;
     }
 
+    public String getSearchKeyword() {
+        return searchKeyword;
+    }
+
 }
