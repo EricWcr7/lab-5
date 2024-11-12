@@ -15,13 +15,14 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import interface_adapter.login.LoginState;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.recipe_search.RecipeSearchController;
+import interface_adapter.recipe_search.RecipeSearchPresenter;
 import interface_adapter.recipe_search.RecipeSearchState;
 import interface_adapter.recipe_search.RecipeSearchViewModel;
 
-//public class RecipeSearchView extends JPanel implements PropertyChangeListener {
-public class RecipeSearchView extends JPanel {
+public class RecipeSearchView extends JPanel implements ActionListener, PropertyChangeListener {
 
     private final String viewName = "search recipe";
     private final RecipeSearchViewModel recipeSearchViewModel;
@@ -37,7 +38,7 @@ public class RecipeSearchView extends JPanel {
 
     public RecipeSearchView(RecipeSearchViewModel recipeSearchViewModel) {
         this.recipeSearchViewModel = recipeSearchViewModel;
-//        this.recipeSearchViewModel.addPropertyChangeListener(this);
+        this.recipeSearchViewModel.addPropertyChangeListener(this);
 
         final JPanel searchPanel = new JPanel();
         search = new JButton("Search");
@@ -103,13 +104,45 @@ public class RecipeSearchView extends JPanel {
                 }
         );
 
-//    @Override
-//    public void propertyChange(PropertyChangeEvent evt) {
-//
-//    }
+        logOut.addActionListener(
+                // This creates an anonymous subclass of ActionListener and instantiates it.
+                evt -> {
+                    if (evt.getSource().equals(logOut)) {
+                        this.logoutController.execute();
+                    }
+                }
+        );
+    }
+
+    /**
+     * React to a button click that results in evt.
+     * @param evt the ActionEvent to react to
+     */
+    public void actionPerformed(ActionEvent evt) {
+        System.out.println("Click " + evt.getActionCommand());
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        final RecipeSearchState state = (RecipeSearchState) evt.getNewValue();
+        setFields(state);
+    }
+
+    private void setFields(RecipeSearchState state) {
+        dishInputField.setText(state.getSearchKeyword());
     }
 
     public String getViewName() {
-        return viewName; }
+        return viewName;
+    }
+
+    public void setLogoutController(LogoutController logoutController) {
+        this.logoutController = logoutController;
+    }
+
+    public void setRecipeSearchController(RecipeSearchController recipeSearchController) {
+        this.recipeSearchController = recipeSearchController;
+    }
 }
+
 
