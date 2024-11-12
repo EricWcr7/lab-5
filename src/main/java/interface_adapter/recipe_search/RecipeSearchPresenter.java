@@ -21,6 +21,9 @@ public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
 
     public void prepareSuccessView(RecipeSearchOutputData outputData) {
         final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
+        final RecipeSearchState recipeSearchState = recipeSearchViewModel.getState();
+        recipeSearchState.setSearchKeyWord("");
+        this.recipeSearchViewModel.firePropertyChanged();
         chooseRecipeState.setSearchKeyword(outputData.getSearchKeyword());
         this.chooseRecipeViewModel.setState(chooseRecipeState);
         this.chooseRecipeViewModel.firePropertyChanged();
