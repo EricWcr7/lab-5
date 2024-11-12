@@ -15,6 +15,7 @@ import interface_adapter.ViewManagerModel;
 import interface_adapter.change_password.ChangePasswordController;
 import interface_adapter.change_password.ChangePasswordPresenter;
 import interface_adapter.change_password.LoggedInViewModel;
+import interface_adapter.choose_recipe.ChooseRecipeViewModel;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginPresenter;
 import interface_adapter.login.LoginViewModel;
@@ -26,6 +27,9 @@ import interface_adapter.signup.SignupViewModel;
 import interface_adapter.recipe_search.RecipeSearchController;
 import interface_adapter.recipe_search.RecipeSearchPresenter;
 import interface_adapter.recipe_search.RecipeSearchViewModel;
+import interface_adapter.choose_recipe.ChooseRecipeController;
+import interface_adapter.choose_recipe.ChooseRecipePresenter;
+import interface_adapter.choose_recipe.ChooseRecipeViewModel;
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
 import use_case.change_password.ChangePasswordOutputBoundary;
@@ -41,11 +45,9 @@ import use_case.signup.SignupOutputBoundary;
 import use_case.recipe_search.RecipeSearchInputBoundary;
 import use_case.recipe_search.RecipeSearchInteractor;
 import use_case.recipe_search.RecipeSearchOutputBoundary;
-import view.LoggedInView;
-import view.LoginView;
-import view.SignupView;
-import view.ViewManager;
-import view.RecipeSearchView;
+
+import view.*;
+
 /**
  * The AppBuilder class is responsible for putting together the pieces of
  * our CA architecture; piece by piece.
@@ -77,6 +79,8 @@ public class AppBuilder {
     private LoginView loginView;
     private RecipeSearchView recipeSearchView;
     private RecipeSearchViewModel recipeSearchViewModel;
+    private ChooseRecipeView chooseRecipeView;
+    private ChooseRecipeViewModel chooseRecipeViewModel;
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
@@ -125,6 +129,18 @@ public class AppBuilder {
         cardPanel.add(recipeSearchView, recipeSearchView.getViewName());
         return this;
     }
+
+    /**
+     * Adds the ChooseRecipe View to the application.
+     * @return this builder
+     */
+    public AppBuilder addChooseRecipeView() {
+        chooseRecipeViewModel = new ChooseRecipeViewModel();
+        chooseRecipeView = new ChooseRecipeView(chooseRecipeViewModel);
+        cardPanel.add(chooseRecipeView, chooseRecipeView.getViewName());
+        return this;
+    }
+
     /**
      * Adds the Signup Use Case to the application.
      * @return this builder
@@ -188,21 +204,22 @@ public class AppBuilder {
         return this;
     }
 
-//    /**
-//     * Adds the RecipeSearch Use Case to the application.
-//     * @return this builder
-//     */
-//    public AppBuilder addRecipeSearchUseCase() {
-//        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
-//                loggedInViewModel, loginViewModel);
-//
-//        final LogoutInputBoundary logoutInteractor =
-//                new LogoutInteractor(userDataAccessObject, logoutOutputBoundary);
-//
-//        final LogoutController logoutController = new LogoutController(logoutInteractor);
-//        loggedInView.setLogoutController(logoutController);
-//        return this;
-//    }
+    /**
+     * Adds the RecipeSearch Use Case to the application.
+     * @return this builder
+     */
+    public AppBuilder addRecipeSearchUseCase() {
+        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
+                chooseRecipeViewModel, recipeSearchViewModel);
+
+        final RecipeSearchInputBoundary recipeSearchInteractor = new RecipeSearchInteractor(
+                recipeSearchOutputBoundary);
+
+        final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
+        recipeSearchView.setRecipeSearchController(recipeSearchController);
+        return this;
+    }
+
     /**
      * Creates the JFrame for the application and initially sets the SignupView to be displayed.
      * @return the application

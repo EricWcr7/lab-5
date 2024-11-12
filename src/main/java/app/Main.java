@@ -20,10 +20,12 @@ public class Main {
                                             .addSignupView()
                                             .addLoggedInView()
                                             .addRecipeSearchView()
+                                            .addChooseRecipeView()
                                             .addSignupUseCase()
                                             .addLoginUseCase()
                                             .addChangePasswordUseCase()
                                             .addLogoutUseCase()
+                                            .addRecipeSearchUseCase()
                                             .build();
         application.pack();
         application.setSize(width, height);

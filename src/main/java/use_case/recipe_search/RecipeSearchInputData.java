@@ -6,4 +6,8 @@ public class RecipeSearchInputData {
     public RecipeSearchInputData(String searchKeyword) {
         this.searchKeyword = searchKeyword;
     }
+
+    public String getSearchKeyword() {
+        return searchKeyword;
+    }
 }
