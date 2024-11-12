@@ -11,6 +11,8 @@ import entity.CommonRecipeFactory;
 import entity.CommonUserFactory;
 import entity.RecipeFactory;
 import entity.UserFactory;
+import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
+import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuPresenter;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.change_password.ChangePasswordController;
 import interface_adapter.change_password.ChangePasswordPresenter;
@@ -30,6 +32,9 @@ import interface_adapter.recipe_search.RecipeSearchViewModel;
 import interface_adapter.choose_recipe.ChooseRecipeController;
 import interface_adapter.choose_recipe.ChooseRecipePresenter;
 import interface_adapter.choose_recipe.ChooseRecipeViewModel;
+import use_case.ReturnToSearchMenu.ReturnToSearchMenuInputBoundary;
+import use_case.ReturnToSearchMenu.ReturnToSearchMenuInteractor;
+import use_case.ReturnToSearchMenu.ReturnToSearchMenuOutputBoundary;
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
 import use_case.change_password.ChangePasswordOutputBoundary;
@@ -217,6 +222,23 @@ public class AppBuilder {
 
         final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
         recipeSearchView.setRecipeSearchController(recipeSearchController);
+        return this;
+    }
+
+    /**
+     * Adds the ReturnToSearchMenu Use Case to the application.
+     * @return this builder
+     */
+    public AppBuilder addReturnToSearchMenuUseCase() {
+        final ReturnToSearchMenuOutputBoundary returnToSearchMenuOutputBoundary =
+                new ReturnToSearchMenuPresenter(viewManagerModel,
+                recipeSearchViewModel, chooseRecipeViewModel);
+
+        final ReturnToSearchMenuInputBoundary returnToSearchMenuInteractor =
+                new ReturnToSearchMenuInteractor(returnToSearchMenuOutputBoundary);
+
+        final ReturnToSearchMenuController returnToSearchMenuController = new ReturnToSearchMenuController(returnToSearchMenuInteractor);
+        chooseRecipeView.setReturnToSearchMenuController(returnToSearchMenuController);
         return this;
     }
 

@@ -26,6 +26,7 @@ public class Main {
                                             .addChangePasswordUseCase()
                                             .addLogoutUseCase()
                                             .addRecipeSearchUseCase()
+                                            .addReturnToSearchMenuUseCase()
                                             .build();
         application.pack();
         application.setSize(width, height);
