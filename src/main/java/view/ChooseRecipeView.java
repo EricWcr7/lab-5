@@ -39,9 +39,7 @@ public class ChooseRecipeView extends JPanel implements ActionListener, Property
                 // This creates an anonymous subclass of ActionListener and instantiates it.
                 evt -> {
                     if (evt.getSource().equals(returnToSearchMenu)) {
-                        final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
-                        final String searchKeyword = chooseRecipeState.getSearchKeyword();
-                        this.returnToSearchMenuController.execute(searchKeyword);
+                        this.returnToSearchMenuController.execute();
                     }
                 }
         );

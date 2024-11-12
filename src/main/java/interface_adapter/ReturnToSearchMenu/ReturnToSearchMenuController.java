@@ -11,8 +11,7 @@ public class ReturnToSearchMenuController {
         this.returnToSearchMenuInteractor = returnToSearchMenuInteractor;
     }
 
-    public void execute(String searchKeyword) {
-        ReturnToSearchMenuInputData returnToSearchMenuInputData = new ReturnToSearchMenuInputData(searchKeyword);
-        returnToSearchMenuInteractor.execute(returnToSearchMenuInputData);
+    public void execute() {
+        returnToSearchMenuInteractor.execute();
     }
 }

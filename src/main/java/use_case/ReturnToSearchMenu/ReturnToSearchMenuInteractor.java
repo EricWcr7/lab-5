@@ -8,9 +8,7 @@ public class ReturnToSearchMenuInteractor implements ReturnToSearchMenuInputBoun
     }
 
     @Override
-    public void execute(ReturnToSearchMenuInputData returnToSearchMenuInputData) {
-        final ReturnToSearchMenuOutputData returnToSearchMenuOutputData =
-                new ReturnToSearchMenuOutputData(returnToSearchMenuInputData.getSearchKeyword());
-        returnToSearchMenuPresenter.prepareSuccessView(returnToSearchMenuOutputData);
+    public void execute() {
+        returnToSearchMenuPresenter.prepareSuccessView();
     }
 }

@@ -23,7 +23,7 @@ public class ReturnToSearchMenuPresenter implements ReturnToSearchMenuOutputBoun
     }
 
     @Override
-    public void prepareSuccessView(ReturnToSearchMenuOutputData returnToSearchMenuOutputData) {
+    public void prepareSuccessView() {
         final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
         chooseRecipeState.setSearchKeyword("");
 
