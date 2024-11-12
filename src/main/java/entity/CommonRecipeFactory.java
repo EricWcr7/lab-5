@@ -1,19 +1,24 @@
 package entity;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
+/**
+ * Factory for creating instances of CommonRecipe.
+ */
 public class CommonRecipeFactory implements RecipeFactory {
 
-    public Recipe createRecipe(String recipeName, List<String> ingredients, List<String> measures, String instructions) {
-        final Map ingredientsWithAmount = new HashMap<String, String>();
-        for (int i = 0; i < ingredients.size(); i++) {
-            ingredientsWithAmount.put(ingredients.get(i), measures.get(i));
-        }
-        return new CommonRecipe(recipeName, ingredientsWithAmount, instructions);
-
+    /**
+     * Creates a CommonRecipe with the specified details.
+     *
+     * @param id the ID of the recipe
+     * @param name the name of the recipe
+     * @param category the category of the recipe
+     * @param instructions the cooking instructions
+     * @param ingredientMeasureMap the ingredient and measurement of the recipe
+     * @return a new CommonRecipe instance with the specified details
+     */
+    @Override
+    public Recipe createRecipe(String id, String name, String category,
+                               String instructions, Map<String, String> ingredientMeasureMap) {
+        return new CommonRecipe(id, name, category, instructions, ingredientMeasureMap);
     }
-
-
 }

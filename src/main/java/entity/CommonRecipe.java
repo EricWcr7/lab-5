@@ -2,49 +2,52 @@ package entity;
 
 import java.util.Map;
 
+/**
+ * Implementation of the Recipe interface representing a common recipe.
+ */
 public class CommonRecipe implements Recipe {
+    private final String id;
+    private final String name;
+    private final String category;
+    private final String instructions;
+    private final Map<String, String> ingredientMeasureMap;
 
-    private String recipeName;
-    private String instruction;
-    private Map<String, String> ingredientsWithAmounts;
-    private String creator;
-    private int likeNumbers;
-    private int dislikeNumbers;
-
-    public CommonRecipe(String recipeName, Map<String, String> ingredientsWithAmounts, String instruction) {
-        this.recipeName = recipeName;
-        this.instruction = instruction;
-        this.ingredientsWithAmounts = ingredientsWithAmounts;
-        this.likeNumbers = 0;
-        this.dislikeNumbers = 0;
-        this.creator = "";
+    /**
+     * Constructs a CommonRecipe object with specified details.
+     *
+     * @param id the ID of the recipe
+     * @param name the name of the recipe
+     * @param category the category of the recipe
+     * @param instructions the cooking instructions
+     * @param ingredientMeasureMap the ingredient and measurement of the recipe
+     */
+    public CommonRecipe(String id, String name, String category, String instructions,
+                        Map<String, String> ingredientMeasureMap) {
+        this.id = id;
+        this.name = name;
+        this.category = category;
+        this.instructions = instructions;
+        this.ingredientMeasureMap = ingredientMeasureMap;
     }
 
     @Override
-    public String getRecipeName() {
-        return this.recipeName;
+    public String getId() {
+        return id;
     }
 
     @Override
-    public Map<String, String> getRecipeIngredients() {
-        return this.ingredientsWithAmounts;
+    public String getName() {
+        return name;
     }
 
     @Override
-    public String getRecipeInstructions() {
-        return this.instruction;
+    public String getCategory() {
+        return category;
     }
 
     @Override
-    public String getCreator() {
-        return this.creator;
+    public String getInstructions() {
+        return instructions;
     }
 
-    public void like() {
-        this.likeNumbers++;
-    }
-
-    public void dislike() {
-        this.dislikeNumbers++;
-    }
 }

@@ -6,9 +6,8 @@ package use_case.logout;
 public interface LogoutOutputBoundary {
     /**
      * Prepares the success view for the Login Use Case.
-     * @param outputData the output data
      */
-    void prepareSuccessView(LogoutOutputData outputData);
+    void prepareSuccessView();
 
     /**
      * Prepares the failure view for the Login Use Case.

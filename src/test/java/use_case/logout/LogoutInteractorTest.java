@@ -36,7 +36,7 @@ class LogoutInteractorTest {
         };
 
         LogoutInputBoundary interactor = new LogoutInteractor(userRepository, successPresenter);
-        interactor.execute(inputData);
+        interactor.execute();
         // check that the user was logged out
         assertNull(userRepository.getCurrentUsername());
     }
