@@ -33,7 +33,14 @@ public class LoggedInView extends JPanel implements PropertyChangeListener {
 
     private final JButton logOut;
 
+    private final JButton search;
+
+    private final JButton myedit;
+
+    private final JButton myfavorite;
+
     private final JTextField passwordInputField = new JTextField(15);
+    private final JTextField searchInputField = new JTextField(15);
     private final JButton changePassword;
 
     public LoggedInView(LoggedInViewModel loggedInViewModel) {
@@ -49,7 +56,19 @@ public class LoggedInView extends JPanel implements PropertyChangeListener {
         final JLabel usernameInfo = new JLabel("Currently logged in: ");
         username = new JLabel();
 
+        final LabelTextPanel searchInfo = new LabelTextPanel(
+                new JLabel(LoggedInViewModel.SEARCH_LABEL), searchInputField);
+
         final JPanel buttons = new JPanel();
+        search = new JButton("Search");
+        buttons.add(search);
+
+        myedit = new JButton("My Edit");
+        buttons.add(myedit);
+
+        myfavorite = new JButton("My favorite");
+        buttons.add(myfavorite);
+
         logOut = new JButton("Log Out");
         buttons.add(logOut);
 
@@ -111,6 +130,7 @@ public class LoggedInView extends JPanel implements PropertyChangeListener {
 
         this.add(passwordInfo);
         this.add(passwordErrorField);
+        this.add(searchInfo);
         this.add(buttons);
     }
 
