@@ -11,6 +11,8 @@ public interface RecipeSearchInputBoundary {
      */
     void execute(RecipeSearchInputData recipeSearchInputData);
 
+    void switchToSearchResultView();
+
 //    /**
 //     * Executes the switch to login view use case.
 //     */

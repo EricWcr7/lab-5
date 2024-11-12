@@ -21,4 +21,6 @@ public interface RecipeSearchOutputBoundary {
      * Switches to the Login View.
      */
     void switchToLoginView();
+
+    void switchToSearchResultView();
 }

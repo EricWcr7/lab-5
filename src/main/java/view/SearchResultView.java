@@ -16,29 +16,24 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import interface_adapter.change_password.LoggedInState;
-import interface_adapter.login.LoginController;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.recipe_search.RecipeSearchController;
 import interface_adapter.recipe_search.RecipeSearchState;
 import interface_adapter.recipe_search.RecipeSearchViewModel;
-import use_case.recipe_search.RecipeSearchInputBoundary;
 
 //public class RecipeSearchView extends JPanel implements PropertyChangeListener {
-public class RecipeSearchView extends JPanel {
+public class SearchResultView extends JPanel {
 
-    private final String viewName = "search recipe";
+    private final String viewName = "search result";
     private final RecipeSearchViewModel recipeSearchViewModel;
     private RecipeSearchController recipeSearchController;
-    private LogoutController logoutController;
 
-    private final JButton logOut;
-    private final JButton edit;
-    private final JButton favorite;
+    private final JButton back;
     private final JButton search;
 
     private final JTextField dishInputField = new JTextField(50);
 
-    public RecipeSearchView(RecipeSearchViewModel recipeSearchViewModel) {
+    public SearchResultView(RecipeSearchViewModel recipeSearchViewModel) {
         this.recipeSearchViewModel = recipeSearchViewModel;
 //        this.recipeSearchViewModel.addPropertyChangeListener(this);
 
@@ -50,14 +45,8 @@ public class RecipeSearchView extends JPanel {
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         final JPanel buttons = new JPanel();
-        edit = new JButton("My Edit recipe");
-        buttons.add(edit);
-
-        favorite = new JButton("My favorite recipe");
-        buttons.add(favorite);
-
-        logOut = new JButton("Log Out");
-        buttons.add(logOut);
+        back = new JButton("back");
+        buttons.add(back);
 
         this.add(title);
         this.add(searchPanel);
@@ -96,22 +85,12 @@ public class RecipeSearchView extends JPanel {
                             // 返回一个初始化的search state
                             // 由于监听器的存在 所以会实时的更新 current state中的内容 然后controller就能
                             // 根据这些数据开始run usecase
-                            recipeSearchController.switchToSearchResultView();
-                            // final RecipeSearchState currentState = recipeSearchViewModel.getState();
+                            final RecipeSearchState currentState = recipeSearchViewModel.getState();
 
-                            // recipeSearchController.execute(
-                            //         currentState.getSearchKeyword()
-                            // );
+                            recipeSearchController.execute(
+                                    currentState.getSearchKeyword()
+                            );
                         }
-                    }
-                }
-        );
-
-        logOut.addActionListener(
-                // This creates an anonymous subclass of ActionListener and instantiates it.
-                evt -> {
-                    if (evt.getSource().equals(logOut)) {
-                        this.logoutController.execute();
                     }
                 }
         );
@@ -124,14 +103,7 @@ public class RecipeSearchView extends JPanel {
 
     public String getViewName() {
         return viewName; }
-
-    public void setLogoutController(LogoutController logoutController) {
-        this.logoutController = logoutController;
-    }
-
-    public void setRecipeSearchController(RecipeSearchController recipeSearchController) {
-        this.recipeSearchController = recipeSearchController;
-    }
 }
+
 
 

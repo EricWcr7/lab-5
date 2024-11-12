@@ -13,6 +13,10 @@ public class RecipeSearchController {
         this.recipeSearchInteractor = recipeSearchInteractor;
     }
 
+    public void switchToSearchResultView() {
+        recipeSearchInteractor.switchToSearchResultView();
+    }
+
     /**
      * Executes the Signup Use Case.
      * @param searchKeyword the keyword user type to search for

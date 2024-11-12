@@ -18,6 +18,11 @@ public class RecipeSearchInteractor implements RecipeSearchInputBoundary {
 
     }
 
+    @Override
+    public void switchToSearchResultView() {
+        recipeSearchPresenter.switchToSearchResultView();
+    }
+
 //    @Override
 //    public void switchToSearchedView() {
 //        recipeSearchPresenter.switchToSearchedView();
