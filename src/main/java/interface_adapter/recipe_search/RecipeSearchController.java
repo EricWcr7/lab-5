@@ -21,5 +21,6 @@ public class RecipeSearchController {
         final RecipeSearchInputData recipeSearchInputData = new RecipeSearchInputData(searchKeyword);
 
         recipeSearchInteractor.execute(recipeSearchInputData);
+        System.out.println("Search button clicked with keyword: " + searchKeyword);
     }
 }

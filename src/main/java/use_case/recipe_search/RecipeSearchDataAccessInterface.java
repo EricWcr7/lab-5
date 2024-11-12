@@ -1,5 +1,7 @@
 package use_case.recipe_search;
 
+import java.util.List;
+import entity.CommonRecipe;
 
 /**
  * DAO for the RecipeSearch Use Case.
@@ -7,16 +9,22 @@ package use_case.recipe_search;
 public interface RecipeSearchDataAccessInterface {
 
     /**
-     * Fetches recipes related to the given search keyword.
+     * Fetches all recipes from the API and returns a list of recipes.
+     * This is intended to gather the full set of recipes for shared storage.
      *
-     * @param searchKeyword the keyword to search for recipes
+     * @return a list of all recipes from the API
+     * @throws Exception if there is an error during the fetch
      */
-    void fetchRecipesBySearchKeyword(String searchKeyword);
+    List<CommonRecipe> fetchAllRecipes() throws Exception;
+
+    List<CommonRecipe> fetchRecipesByKeyword(String searchKeyword) throws Exception;
 
     /**
-     * Parses the JSON response and adds each recipe JsonObject to the recipesJson list.
+     * Writes a list of recipes to a file and uploads the file to shared storage.
      *
-     * @param responseBody the JSON response body from the API
+     * @param recipes the list of recipes to write to the file
      */
-    void parseAndStoreRawJson(String responseBody);
+    void writeRecipesToFile(List<CommonRecipe> recipes);
 }
+
+

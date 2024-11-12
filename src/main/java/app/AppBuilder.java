@@ -1,79 +1,45 @@
 package app;
 
 import java.awt.CardLayout;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import data_access.InMemoryUserDataAccessObject;
-import entity.CommonRecipeFactory;
-import entity.CommonUserFactory;
-import entity.RecipeFactory;
-import entity.UserFactory;
+import data_access.RecipeDataAccessObject;
+import entity.*;
+import interface_adapter.*;
 import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
 import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuPresenter;
-import interface_adapter.ViewManagerModel;
-import interface_adapter.change_password.ChangePasswordController;
-import interface_adapter.change_password.ChangePasswordPresenter;
-import interface_adapter.change_password.LoggedInViewModel;
-import interface_adapter.choose_recipe.ChooseRecipeViewModel;
-import interface_adapter.login.LoginController;
-import interface_adapter.login.LoginPresenter;
-import interface_adapter.login.LoginViewModel;
-import interface_adapter.logout.LogoutController;
-import interface_adapter.logout.LogoutPresenter;
-import interface_adapter.signup.SignupController;
-import interface_adapter.signup.SignupPresenter;
-import interface_adapter.signup.SignupViewModel;
-import interface_adapter.recipe_search.RecipeSearchController;
-import interface_adapter.recipe_search.RecipeSearchPresenter;
-import interface_adapter.recipe_search.RecipeSearchViewModel;
-import interface_adapter.choose_recipe.ChooseRecipeController;
-import interface_adapter.choose_recipe.ChooseRecipePresenter;
-import interface_adapter.choose_recipe.ChooseRecipeViewModel;
+import interface_adapter.change_password.*;
+import interface_adapter.choose_recipe.*;
+import interface_adapter.login.*;
+import interface_adapter.logout.*;
+import interface_adapter.recipe_search.*;
+import interface_adapter.signup.*;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuInputBoundary;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuInteractor;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuOutputBoundary;
-import use_case.change_password.ChangePasswordInputBoundary;
-import use_case.change_password.ChangePasswordInteractor;
-import use_case.change_password.ChangePasswordOutputBoundary;
-import use_case.login.LoginInputBoundary;
-import use_case.login.LoginInteractor;
-import use_case.login.LoginOutputBoundary;
-import use_case.logout.LogoutInputBoundary;
-import use_case.logout.LogoutInteractor;
-import use_case.logout.LogoutOutputBoundary;
-import use_case.signup.SignupInputBoundary;
-import use_case.signup.SignupInteractor;
-import use_case.signup.SignupOutputBoundary;
-import use_case.recipe_search.RecipeSearchInputBoundary;
-import use_case.recipe_search.RecipeSearchInteractor;
-import use_case.recipe_search.RecipeSearchOutputBoundary;
-
+import use_case.change_password.*;
+import use_case.login.*;
+import use_case.logout.*;
+import use_case.recipe_search.*;
+import use_case.signup.*;
 import view.*;
 
 /**
  * The AppBuilder class is responsible for putting together the pieces of
  * our CA architecture; piece by piece.
- * <p/>
- * This is done by adding each View and then adding related Use Cases.
  */
-// Checkstyle note: you can ignore the "Class Data Abstraction Coupling"
-//                  and the "Class Fan-Out Complexity" issues for this lab; we encourage
-//                  your team to think about ways to refactor the code to resolve these
-//                  if your team decides to work with this as your starter code
-//                  for your final project this term.
 public class AppBuilder {
     private final JPanel cardPanel = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
-    // thought question: is the hard dependency below a problem?
+
     private final UserFactory userFactory = new CommonUserFactory();
     private final RecipeFactory recipeFactory = new CommonRecipeFactory();
     private final ViewManagerModel viewManagerModel = new ViewManagerModel();
     private final ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
-    // thought question: is the hard dependency below a problem?
     private final InMemoryUserDataAccessObject userDataAccessObject = new InMemoryUserDataAccessObject();
 
     private SignupView signupView;
@@ -87,8 +53,23 @@ public class AppBuilder {
     private ChooseRecipeView chooseRecipeView;
     private ChooseRecipeViewModel chooseRecipeViewModel;
 
+    // Updated reference to the RecipeSearchInteractor to allow initialization
+    private RecipeSearchInteractor recipeSearchInteractor;
+
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
+    }
+
+    /**
+     * Initializes the shared recipe storage with all recipes from the API.
+     */
+    private void initializeSharedRecipeStorage() {
+        if (recipeSearchInteractor != null) {
+            System.out.println("Calling initializeRecipeStorage in RecipeSearchInteractor...");
+            recipeSearchInteractor.initializeRecipeStorage();
+        } else {
+            System.err.println("RecipeSearchInteractor not initialized. Please ensure addRecipeSearchUseCase is called first.");
+        }
     }
 
     /**
@@ -210,35 +191,35 @@ public class AppBuilder {
     }
 
     /**
-     * Adds the RecipeSearch Use Case to the application.
-     * @return this builder
-     */
-    public AppBuilder addRecipeSearchUseCase() {
-        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
-                chooseRecipeViewModel, recipeSearchViewModel);
-
-        final RecipeSearchInputBoundary recipeSearchInteractor = new RecipeSearchInteractor(
-                recipeSearchOutputBoundary);
-
-        final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
-        recipeSearchView.setRecipeSearchController(recipeSearchController);
-        return this;
-    }
-
-    /**
      * Adds the ReturnToSearchMenu Use Case to the application.
      * @return this builder
      */
     public AppBuilder addReturnToSearchMenuUseCase() {
         final ReturnToSearchMenuOutputBoundary returnToSearchMenuOutputBoundary =
                 new ReturnToSearchMenuPresenter(viewManagerModel,
-                recipeSearchViewModel, chooseRecipeViewModel);
+                        recipeSearchViewModel, chooseRecipeViewModel);
 
         final ReturnToSearchMenuInputBoundary returnToSearchMenuInteractor =
                 new ReturnToSearchMenuInteractor(returnToSearchMenuOutputBoundary);
 
         final ReturnToSearchMenuController returnToSearchMenuController = new ReturnToSearchMenuController(returnToSearchMenuInteractor);
         chooseRecipeView.setReturnToSearchMenuController(returnToSearchMenuController);
+        return this;
+    }
+
+    /**
+     * Adds the RecipeSearch Use Case to the application.
+     * @return this builder
+     */
+    public AppBuilder addRecipeSearchUseCase() {
+        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(
+                viewManagerModel, chooseRecipeViewModel, recipeSearchViewModel);
+
+        // Pass the output boundary (presenter) to the interactor and initialize the interactor instance
+        recipeSearchInteractor = new RecipeSearchInteractor(recipeSearchOutputBoundary);
+
+        final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
+        recipeSearchView.setRecipeSearchController(recipeSearchController);
         return this;
     }
 
@@ -250,6 +231,9 @@ public class AppBuilder {
         final JFrame application = new JFrame("Mealmaster");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        // Call the initializeSharedRecipeStorage to ensure recipes are loaded and saved
+        initializeSharedRecipeStorage();
+
         application.add(cardPanel);
 
         viewManagerModel.setState(loginView.getViewName());
@@ -258,3 +242,4 @@ public class AppBuilder {
         return application;
     }
 }
+

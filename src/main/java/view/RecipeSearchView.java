@@ -5,20 +5,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import interface_adapter.login.LoginState;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.recipe_search.RecipeSearchController;
-import interface_adapter.recipe_search.RecipeSearchPresenter;
 import interface_adapter.recipe_search.RecipeSearchState;
 import interface_adapter.recipe_search.RecipeSearchViewModel;
 
@@ -86,16 +78,11 @@ public class RecipeSearchView extends JPanel implements ActionListener, Property
         });
 
         search.addActionListener(
-                // This creates an anonymous subclass of ActionListener and instantiates it.
                 new ActionListener() {
-                    // 监听 点击search 的行为
                     public void actionPerformed(ActionEvent evt) {
                         if (evt.getSource().equals(search)) {
-                            // 返回一个初始化的search state
-                            // 由于监听器的存在 所以会实时的更新 current state中的内容 然后controller就能
-                            // 根据这些数据开始run usecase
                             final RecipeSearchState currentState = recipeSearchViewModel.getState();
-
+                            // Use searchRecipe instead of execute
                             recipeSearchController.execute(
                                     currentState.getSearchKeyword()
                             );
@@ -105,7 +92,6 @@ public class RecipeSearchView extends JPanel implements ActionListener, Property
         );
 
         logOut.addActionListener(
-                // This creates an anonymous subclass of ActionListener and instantiates it.
                 evt -> {
                     if (evt.getSource().equals(logOut)) {
                         this.logoutController.execute();
@@ -114,10 +100,7 @@ public class RecipeSearchView extends JPanel implements ActionListener, Property
         );
     }
 
-    /**
-     * React to a button click that results in evt.
-     * @param evt the ActionEvent to react to
-     */
+    @Override
     public void actionPerformed(ActionEvent evt) {
         System.out.println("Click " + evt.getActionCommand());
     }
@@ -144,5 +127,6 @@ public class RecipeSearchView extends JPanel implements ActionListener, Property
         this.recipeSearchController = recipeSearchController;
     }
 }
+
 
 

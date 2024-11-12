@@ -19,6 +19,7 @@ public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
         this.recipeSearchViewModel = recipeSearchViewModel;
     }
 
+    @Override
     public void prepareSuccessView(RecipeSearchOutputData outputData) {
         final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
         final RecipeSearchState recipeSearchState = recipeSearchViewModel.getState();
@@ -32,5 +33,19 @@ public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
         this.viewManagerModel.firePropertyChanged();
     }
 
+    @Override
+    public void prepareFailureView(String errorMessage) {
+        // Set the error message in RecipeSearchState
+        RecipeSearchState recipeSearchState = recipeSearchViewModel.getState();
+        recipeSearchState.setErrorMessage(errorMessage);  // Assuming RecipeSearchState has setErrorMessage
 
+        // Notify the view model of the state change
+        recipeSearchViewModel.setState(recipeSearchState);
+        recipeSearchViewModel.firePropertyChanged();
+
+        // Optionally, update the view manager to reflect the failure state in the UI
+        viewManagerModel.setState(recipeSearchViewModel.getViewName()); // Go to the search view with error
+        viewManagerModel.firePropertyChanged();
+    }
 }
+
