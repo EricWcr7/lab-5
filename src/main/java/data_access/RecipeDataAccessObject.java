@@ -280,7 +280,13 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
                 String jsonContent = response.body();
 
                 // Parse the downloaded JSON content
-                parseDownloadedRecipes(jsonContent);
+                List<CommonRecipe> processedRecipes = parseDownloadedRecipes(jsonContent);
+
+                // Write parsed recipes back to the JSON file
+                writeRecipesToFile(processedRecipes);
+
+                // Upload the updated JSON file immediately
+                uploadFileToFileIo();
 
             } else {
                 System.err.println("Failed to download file. Status code: " + response.statusCode());
@@ -291,28 +297,33 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         }
     }
 
-    private void parseDownloadedRecipes(String jsonContent) {
+
+    private List<CommonRecipe> parseDownloadedRecipes(String jsonContent) {
         System.out.println("Parsing downloaded recipes JSON.");
+        List<CommonRecipe> processedRecipes = new ArrayList<>();
         JsonElement jsonElement = JsonParser.parseString(jsonContent);
 
         if (jsonElement.isJsonArray()) {
             // If JSON is an array, proceed as usual
             JsonArray recipesArray = jsonElement.getAsJsonArray();
             System.out.println("JSON is an array. Processing array elements.");
-            List<CommonRecipe> processedRecipes = processRecipesArray(recipesArray);
+            processedRecipes = processRecipesArray(recipesArray);
             System.out.println("Processed " + processedRecipes.size() + " recipes.");
         } else if (jsonElement.isJsonObject()) {
             // If JSON is a single object, wrap it in an array
             System.out.println("JSON is a single object. Wrapping in an array.");
             JsonArray recipesArray = new JsonArray();
             recipesArray.add(jsonElement.getAsJsonObject());
-            List<CommonRecipe> processedRecipes = processRecipesArray(recipesArray);
+            processedRecipes = processRecipesArray(recipesArray);
             System.out.println("Processed " + processedRecipes.size() + " recipes.");
         } else {
             System.err.println("Unexpected JSON format: Not an array or object.");
             System.err.println("JSON content: " + jsonElement.toString()); // Print the raw JSON element
         }
+
+        return processedRecipes;
     }
+
 
     private List<CommonRecipe> processRecipesArray(JsonArray recipesArray) {
         List<CommonRecipe> processedRecipes = new ArrayList<>();
