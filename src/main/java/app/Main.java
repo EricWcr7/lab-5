@@ -21,7 +21,7 @@ public class Main {
                                             .addLoggedInView()
                                             .addRecipeSearchView()
                                             .addChooseRecipeView()
-                                            .addDisplayRecipeView()
+                                            .addDisplayOneRecipeView()
                                             .addSignupUseCase()
                                             .addLoginUseCase()
                                             .addChangePasswordUseCase()
