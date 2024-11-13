@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import data_access.InMemoryUserDataAccessObject;
+import data_access.RecipeDataAccessObject;
 import entity.CommonRecipeFactory;
 import entity.CommonUserFactory;
 import entity.RecipeFactory;
@@ -44,6 +45,7 @@ import use_case.login.LoginOutputBoundary;
 import use_case.logout.LogoutInputBoundary;
 import use_case.logout.LogoutInteractor;
 import use_case.logout.LogoutOutputBoundary;
+import use_case.recipe_search.RecipeSearchDataAccessInterface;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
@@ -75,7 +77,7 @@ public class AppBuilder {
 
     // thought question: is the hard dependency below a problem?
     private final InMemoryUserDataAccessObject userDataAccessObject = new InMemoryUserDataAccessObject();
-
+    private final RecipeDataAccessObject recipeDataAccessObject = new RecipeDataAccessObject();
     private SignupView signupView;
     private SignupViewModel signupViewModel;
     private LoginViewModel loginViewModel;
@@ -89,6 +91,7 @@ public class AppBuilder {
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
+
     }
 
     /**
@@ -216,9 +219,11 @@ public class AppBuilder {
     public AppBuilder addRecipeSearchUseCase() {
         final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(viewManagerModel,
                 chooseRecipeViewModel, recipeSearchViewModel);
-
+        recipeDataAccessObject.fetchRecipesForAllKeywords();
+        recipeDataAccessObject.uploadFileToFileIo();
+        final RecipeFactory recipeFactory = new CommonRecipeFactory();
         final RecipeSearchInputBoundary recipeSearchInteractor = new RecipeSearchInteractor(
-                recipeSearchOutputBoundary);
+                recipeDataAccessObject, recipeSearchOutputBoundary, recipeFactory);
 
         final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
         recipeSearchView.setRecipeSearchController(recipeSearchController);

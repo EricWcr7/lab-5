@@ -5,10 +5,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import use_case.recipe_search.RecipeSearchDataAccessInterface;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -27,6 +31,7 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
     private static final String FILE_PATH = "recipes.txt";
 
     private final List<JsonObject> recipesJson = new ArrayList<>();
+    private final List<JsonObject> searchedRecipesJson = new ArrayList<>();
 
     /**
      * Fetches recipes for all alphabetical keywords (a-z) and stores them in a list.
@@ -44,34 +49,62 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
      *
      * @param searchKeyword the keyword to search recipes for
      */
-    public void fetchRecipesBySearchKeyword(String searchKeyword) {
-        final String url = API_URL + searchKeyword;
-
+    public List<JsonObject> fetchRecipesBySearchKeyword(String searchKeyword) {
         try {
-            final HttpClient client = HttpClient.newHttpClient();
-            final HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .build();
+            // Construct the URL with the search keyword as a query parameter
+            final String apiUrl = API_URL + searchKeyword;
+            final URL url = new URL(apiUrl);
 
-            final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            // Open the connection
+            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
 
-            // Check if the response status code is 200 (OK)
-            if (response.statusCode() == STATUS_CODE_OK) {
-                // Parse and store JSON response
-                parseAndStoreRawJson(response.body());
+            // Check the response code
+            final int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) { // success
+                final BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                final StringBuilder content = new StringBuilder();
+                String inputLine;
+
+                while ((inputLine = in.readLine()) != null) {
+                    content.append(inputLine);
+                }
+
+                // Close connections
+                in.close();
+                conn.disconnect();
+
+                // Parse JSON response using Gson
+                final JsonObject jsonResponse = JsonParser.parseString(content.toString()).getAsJsonObject();
+                final int count = jsonResponse.has("count") ? jsonResponse.get("count").getAsInt() : 0;
+                System.out.println("Count: " + count);
+
+                // Get "files" array from the response and check if it's not empty
+                if (jsonResponse.has("files")) {
+                    final JsonArray files = jsonResponse.getAsJsonArray("files");
+                    if (files.size() > 0) { // Check if the files array is not empty
+                        for (int i = 0; i < files.size(); i++) {
+                            final JsonObject file = files.get(i).getAsJsonObject();
+                            searchedRecipesJson.add(file);
+                        }
+                    }
+                    else {
+                        System.out.println("No files found in the response.");
+                    }
+                }
             }
             else {
-                System.err.println("Error: Received HTTP " + response.statusCode() + " from API.");
+                System.out.println("GET request failed. Response code: " + responseCode);
             }
         }
-        catch (IOException ioException) {
-            System.err.println("Network error while fetching recipes: " + ioException.getMessage());
+        catch (Exception e) {
+            e.printStackTrace();
         }
-        catch (InterruptedException interruptedException) {
-            System.err.println("Request was interrupted: " + interruptedException.getMessage());
-            Thread.currentThread().interrupt();
-        }
+        // Return the list of searched recipes, even if it's empty
+        return searchedRecipesJson;
     }
+
 
     /**
      * Parses the JSON response and adds each recipe JsonObject to the recipesJson list.
@@ -93,7 +126,7 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
     public void writeRecipesToFile() {
         final File file = new File(FILE_PATH);
 
-        // if exsists, delete file
+        // if exists, delete file
         if (file.exists() && !file.delete()) {
             System.err.println("Error: Unable to delete existing file.");
         }
@@ -113,7 +146,7 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
     /**
      * Uploads the generated file to File.io API.
      */
-    private void uploadFileToFileIo() {
+    public void uploadFileToFileIo() {
         try {
             final HttpClient client = HttpClient.newHttpClient();
             final HttpRequest.BodyPublisher fileBody = HttpRequest.BodyPublishers.ofFile(Path.of(FILE_PATH));
@@ -142,7 +175,4 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
     public List<JsonObject> getRecipesJson() {
         return recipesJson;
     }
-
-
-
 }

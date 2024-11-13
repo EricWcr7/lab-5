@@ -1,6 +1,11 @@
 package use_case.recipe_search;
 
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 /**
  * DAO for the RecipeSearch Use Case.
  */
@@ -11,7 +16,7 @@ public interface RecipeSearchDataAccessInterface {
      *
      * @param searchKeyword the keyword to search for recipes
      */
-    void fetchRecipesBySearchKeyword(String searchKeyword);
+    List<JsonObject> fetchRecipesBySearchKeyword(String searchKeyword);
 
     /**
      * Parses the JSON response and adds each recipe JsonObject to the recipesJson list.
