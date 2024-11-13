@@ -10,7 +10,8 @@ import java.util.List;
  */
 public class RecipeSearchInteractor implements RecipeSearchInputBoundary {
     private final RecipeSearchOutputBoundary recipeSearchPresenter;
-    private final RecipeSearchDataAccessInterface recipeDataAccessObject;
+    private final RecipeDataAccessObject recipeDataAccessObject;
+    private boolean recipesLoaded = false;  // Flag to ensure loading from cloud only once
 
     /**
      * Constructor for RecipeSearchInteractor.
@@ -29,12 +30,19 @@ public class RecipeSearchInteractor implements RecipeSearchInputBoundary {
      */
     @Override
     public void execute(RecipeSearchInputData recipeSearchInputData) {
+        // Ensure recipes are loaded from the cloud only once
+        if (!recipesLoaded) {
+            System.out.println("Loading recipes from cloud for the first time...");
+            recipeDataAccessObject.loadRecipesFromCloud();
+            recipesLoaded = true;
+        }
+
         final String searchKeyword = recipeSearchInputData.getSearchKeyword();
         System.out.println("Interactor received search keyword: " + searchKeyword);
 
         try {
-            // Fetch recipes from the shared file (assuming all recipes have been uploaded)
-            List<CommonRecipe> recipes = recipeDataAccessObject.fetchRecipesByKeyword(searchKeyword);
+            // Use cached recipes to search for the keyword
+            List<CommonRecipe> recipes = recipeDataAccessObject.searchRecipes(searchKeyword);
 
             // Check if any recipes were found
             if (recipes.isEmpty()) {
@@ -53,11 +61,12 @@ public class RecipeSearchInteractor implements RecipeSearchInputBoundary {
 
     /**
      * Fetches all recipes from the API and stores them to the shared file for global access.
+     * Should be called once to initialize the recipe storage.
      */
     public void initializeRecipeStorage() {
         System.out.println("Initializing shared recipe storage...");
         try {
-            // Fetch all recipes (from 'a' to 'z')
+            // Fetch all recipes (from 'a' to 'z') and cache them in RecipeDataAccessObject
             List<CommonRecipe> allRecipes = recipeDataAccessObject.fetchAllRecipes();
             System.out.println("Total recipes fetched: " + allRecipes.size());
 
@@ -69,6 +78,7 @@ public class RecipeSearchInteractor implements RecipeSearchInputBoundary {
         }
     }
 }
+
 
 
 

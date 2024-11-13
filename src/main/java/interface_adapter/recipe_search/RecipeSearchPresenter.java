@@ -6,6 +6,9 @@ import interface_adapter.choose_recipe.ChooseRecipeViewModel;
 import use_case.recipe_search.RecipeSearchOutputBoundary;
 import use_case.recipe_search.RecipeSearchOutputData;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
     private final RecipeSearchViewModel recipeSearchViewModel;
     private final ChooseRecipeViewModel chooseRecipeViewModel;
@@ -23,21 +26,39 @@ public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
     public void prepareSuccessView(RecipeSearchOutputData outputData) {
         final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
         final RecipeSearchState recipeSearchState = recipeSearchViewModel.getState();
-        recipeSearchState.setSearchKeyWord("");
-        this.recipeSearchViewModel.firePropertyChanged();
-        chooseRecipeState.setSearchKeyword(outputData.getSearchKeyword());
-        this.chooseRecipeViewModel.setState(chooseRecipeState);
-        this.chooseRecipeViewModel.firePropertyChanged();
 
-        this.viewManagerModel.setState(chooseRecipeViewModel.getViewName());
+        // Clear any previous keyword or error message
+        recipeSearchState.setSearchKeyWord("");
+        recipeSearchState.setErrorMessage("");
+        this.recipeSearchViewModel.firePropertyChanged();
+
+        // Check if there are results
+        List<String> recipeNames = outputData.getRecipes().stream()
+                .map(recipe -> recipe.getName())
+                .collect(Collectors.toList());
+
+        if (recipeNames.isEmpty()) {
+            recipeSearchState.setErrorMessage("No recipes found for the keyword.");
+            this.recipeSearchViewModel.firePropertyChanged();
+            viewManagerModel.setState(recipeSearchViewModel.getViewName());
+        } else {
+            chooseRecipeState.setSearchKeyword(outputData.getSearchKeyword());
+            chooseRecipeState.setRecipeNames(recipeNames);
+
+            // Notify changes in ChooseRecipeState and switch view
+            this.chooseRecipeViewModel.setState(chooseRecipeState);
+            this.chooseRecipeViewModel.firePropertyChanged();
+            this.viewManagerModel.setState(chooseRecipeViewModel.getViewName());
+        }
         this.viewManagerModel.firePropertyChanged();
     }
+
 
     @Override
     public void prepareFailureView(String errorMessage) {
         // Set the error message in RecipeSearchState
         RecipeSearchState recipeSearchState = recipeSearchViewModel.getState();
-        recipeSearchState.setErrorMessage(errorMessage);  // Assuming RecipeSearchState has setErrorMessage
+        recipeSearchState.setErrorMessage(errorMessage);
 
         // Notify the view model of the state change
         recipeSearchViewModel.setState(recipeSearchState);
@@ -48,4 +69,5 @@ public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
         viewManagerModel.firePropertyChanged();
     }
 }
+
 

@@ -27,10 +27,6 @@ import use_case.recipe_search.*;
 import use_case.signup.*;
 import view.*;
 
-/**
- * The AppBuilder class is responsible for putting together the pieces of
- * our CA architecture; piece by piece.
- */
 public class AppBuilder {
     private final JPanel cardPanel = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
@@ -53,7 +49,6 @@ public class AppBuilder {
     private ChooseRecipeView chooseRecipeView;
     private ChooseRecipeViewModel chooseRecipeViewModel;
 
-    // Updated reference to the RecipeSearchInteractor to allow initialization
     private RecipeSearchInteractor recipeSearchInteractor;
 
     public AppBuilder() {
@@ -68,69 +63,50 @@ public class AppBuilder {
             System.out.println("Calling initializeRecipeStorage in RecipeSearchInteractor...");
             recipeSearchInteractor.initializeRecipeStorage();
         } else {
-            System.err.println("RecipeSearchInteractor not initialized. Please ensure addRecipeSearchUseCase is called first.");
+            System.err.println("RecipeSearchInteractor not initialized. Ensure addRecipeSearchUseCase is called first.");
         }
     }
 
-    /**
-     * Adds the Signup View to the application.
-     * @return this builder
-     */
     public AppBuilder addSignupView() {
         signupViewModel = new SignupViewModel();
         signupView = new SignupView(signupViewModel);
+        System.out.println("Adding Signup View with name: " + signupView.getViewName());
         cardPanel.add(signupView, signupView.getViewName());
         return this;
     }
 
-    /**
-     * Adds the Login View to the application.
-     * @return this builder
-     */
     public AppBuilder addLoginView() {
         loginViewModel = new LoginViewModel();
         loginView = new LoginView(loginViewModel);
+        System.out.println("Adding Login View with name: " + loginView.getViewName());
         cardPanel.add(loginView, loginView.getViewName());
         return this;
     }
 
-    /**
-     * Adds the LoggedIn View to the application.
-     * @return this builder
-     */
     public AppBuilder addLoggedInView() {
         loggedInViewModel = new LoggedInViewModel();
         loggedInView = new LoggedInView(loggedInViewModel);
+        System.out.println("Adding LoggedIn View with name: " + loggedInView.getViewName());
         cardPanel.add(loggedInView, loggedInView.getViewName());
         return this;
     }
 
-    /**
-     * Adds the RecipeSearch View to the application.
-     * @return this builder
-     */
     public AppBuilder addRecipeSearchView() {
         recipeSearchViewModel = new RecipeSearchViewModel();
         recipeSearchView = new RecipeSearchView(recipeSearchViewModel);
+        System.out.println("Adding Recipe Search View with name: " + recipeSearchView.getViewName());
         cardPanel.add(recipeSearchView, recipeSearchView.getViewName());
         return this;
     }
 
-    /**
-     * Adds the ChooseRecipe View to the application.
-     * @return this builder
-     */
     public AppBuilder addChooseRecipeView() {
         chooseRecipeViewModel = new ChooseRecipeViewModel();
         chooseRecipeView = new ChooseRecipeView(chooseRecipeViewModel);
+        System.out.println("Adding Choose Recipe View with name: " + chooseRecipeView.getViewName());
         cardPanel.add(chooseRecipeView, chooseRecipeView.getViewName());
         return this;
     }
 
-    /**
-     * Adds the Signup Use Case to the application.
-     * @return this builder
-     */
     public AppBuilder addSignupUseCase() {
         final SignupOutputBoundary signupOutputBoundary = new SignupPresenter(viewManagerModel,
                 signupViewModel, loginViewModel);
@@ -142,10 +118,6 @@ public class AppBuilder {
         return this;
     }
 
-    /**
-     * Adds the Login Use Case to the application.
-     * @return this builder
-     */
     public AppBuilder addLoginUseCase() {
         final LoginOutputBoundary loginOutputBoundary = new LoginPresenter(viewManagerModel,
                 recipeSearchViewModel, loginViewModel, signupViewModel);
@@ -157,10 +129,6 @@ public class AppBuilder {
         return this;
     }
 
-    /**
-     * Adds the Change Password Use Case to the application.
-     * @return this builder
-     */
     public AppBuilder addChangePasswordUseCase() {
         final ChangePasswordOutputBoundary changePasswordOutputBoundary =
                 new ChangePasswordPresenter(loggedInViewModel);
@@ -174,10 +142,6 @@ public class AppBuilder {
         return this;
     }
 
-    /**
-     * Adds the Logout Use Case to the application.
-     * @return this builder
-     */
     public AppBuilder addLogoutUseCase() {
         final LogoutOutputBoundary logoutOutputBoundary = new LogoutPresenter(viewManagerModel,
                 recipeSearchViewModel, loginViewModel);
@@ -190,10 +154,6 @@ public class AppBuilder {
         return this;
     }
 
-    /**
-     * Adds the ReturnToSearchMenu Use Case to the application.
-     * @return this builder
-     */
     public AppBuilder addReturnToSearchMenuUseCase() {
         final ReturnToSearchMenuOutputBoundary returnToSearchMenuOutputBoundary =
                 new ReturnToSearchMenuPresenter(viewManagerModel,
@@ -207,15 +167,10 @@ public class AppBuilder {
         return this;
     }
 
-    /**
-     * Adds the RecipeSearch Use Case to the application.
-     * @return this builder
-     */
     public AppBuilder addRecipeSearchUseCase() {
         final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(
                 viewManagerModel, chooseRecipeViewModel, recipeSearchViewModel);
 
-        // Pass the output boundary (presenter) to the interactor and initialize the interactor instance
         recipeSearchInteractor = new RecipeSearchInteractor(recipeSearchOutputBoundary);
 
         final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
@@ -223,23 +178,21 @@ public class AppBuilder {
         return this;
     }
 
-    /**
-     * Creates the JFrame for the application and initially sets the SignupView to be displayed.
-     * @return the application
-     */
     public JFrame build() {
         final JFrame application = new JFrame("Mealmaster");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        // Call the initializeSharedRecipeStorage to ensure recipes are loaded and saved
         initializeSharedRecipeStorage();
 
         application.add(cardPanel);
 
-        viewManagerModel.setState(loginView.getViewName());
+        System.out.println("Setting initial view state to: " + signupView.getViewName());
+        viewManagerModel.setState(signupView.getViewName());
         viewManagerModel.firePropertyChanged();
 
         return application;
     }
 }
+
+
 

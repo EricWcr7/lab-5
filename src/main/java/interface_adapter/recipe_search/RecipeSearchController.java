@@ -14,13 +14,17 @@ public class RecipeSearchController {
     }
 
     /**
-     * Executes the Signup Use Case.
-     * @param searchKeyword the keyword user type to search for
+     * Executes the Recipe Search Use Case.
+     * @param searchKeyword the keyword user types to search for
      */
     public void execute(String searchKeyword) {
+        // Create the input data for the search operation
         final RecipeSearchInputData recipeSearchInputData = new RecipeSearchInputData(searchKeyword);
 
+        // Perform the search operation through the interactor
         recipeSearchInteractor.execute(recipeSearchInputData);
+
         System.out.println("Search button clicked with keyword: " + searchKeyword);
     }
 }
+
