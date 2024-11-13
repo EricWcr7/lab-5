@@ -29,6 +29,7 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
     private static final String FILE_IO_API_URL = "https://file.io";
     private static final String FILE_PATH = "all_recipes.json";
     private static String FILE_KEY = ""; // Replace with actual file key after upload
+    private static final String API_KEY = "35F52QF.ZQV4A4E-ASHMAQD-QSPTZ93-NHYCJT6";
     private static final int STATUS_CODE_OK = 200;
     // Holds the list of recipes loaded from the downloaded JSON
     private List<CommonRecipe> cachedRecipes = new ArrayList<>();
@@ -209,7 +210,7 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         System.out.println("Uploading file to File.io with Bearer Auth.");
         try {
             final HttpClient client = HttpClient.newHttpClient();
-            String bearerToken = "Meal Master"; // Replace this with your actual token
+            String bearerToken = API_KEY; // Replace this with your actual token
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(FILE_IO_API_URL))
