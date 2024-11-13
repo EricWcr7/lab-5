@@ -150,7 +150,7 @@ public class AppBuilder {
      * Adds the Display Recipe View to the application.
      * @return this builder
      */
-    public AppBuilder addDisplayOneRecipeView() {
+    public AppBuilder addDisplayRecipeView() {
         displayRecipeViewModel = new DisplayRecipeViewModel();
         displayRecipeView = new DisplayRecipeView(displayRecipeViewModel);
         cardPanel.add(displayRecipeView, displayRecipeView.getViewName());
