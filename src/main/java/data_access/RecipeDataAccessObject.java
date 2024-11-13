@@ -29,6 +29,7 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
     private static final String FILE_IO_API_URL = "https://file.io";
     private static final String FILE_PATH = "all_recipes.json";
     private static String FILE_KEY = ""; // Replace with actual file key after upload
+    private static final String API_KEY = "35F52QF.ZQV4A4E-ASHMAQD-QSPTZ93-NHYCJT6";
     private static final int STATUS_CODE_OK = 200;
     // Holds the list of recipes loaded from the downloaded JSON
     private List<CommonRecipe> cachedRecipes = new ArrayList<>();
@@ -209,7 +210,7 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         System.out.println("Uploading file to File.io with Bearer Auth.");
         try {
             final HttpClient client = HttpClient.newHttpClient();
-            String bearerToken = "Meal Master"; // Replace this with your actual token
+            String bearerToken = API_KEY; // Replace this with your actual token
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(FILE_IO_API_URL))
@@ -280,7 +281,13 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
                 String jsonContent = response.body();
 
                 // Parse the downloaded JSON content
-                parseDownloadedRecipes(jsonContent);
+                List<CommonRecipe> processedRecipes = parseDownloadedRecipes(jsonContent);
+
+                // Write parsed recipes back to the JSON file
+                writeRecipesToFile(processedRecipes);
+
+                // Upload the updated JSON file immediately
+                uploadFileToFileIo();
 
             } else {
                 System.err.println("Failed to download file. Status code: " + response.statusCode());
@@ -291,28 +298,33 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         }
     }
 
-    private void parseDownloadedRecipes(String jsonContent) {
+
+    private List<CommonRecipe> parseDownloadedRecipes(String jsonContent) {
         System.out.println("Parsing downloaded recipes JSON.");
+        List<CommonRecipe> processedRecipes = new ArrayList<>();
         JsonElement jsonElement = JsonParser.parseString(jsonContent);
 
         if (jsonElement.isJsonArray()) {
             // If JSON is an array, proceed as usual
             JsonArray recipesArray = jsonElement.getAsJsonArray();
             System.out.println("JSON is an array. Processing array elements.");
-            List<CommonRecipe> processedRecipes = processRecipesArray(recipesArray);
+            processedRecipes = processRecipesArray(recipesArray);
             System.out.println("Processed " + processedRecipes.size() + " recipes.");
         } else if (jsonElement.isJsonObject()) {
             // If JSON is a single object, wrap it in an array
             System.out.println("JSON is a single object. Wrapping in an array.");
             JsonArray recipesArray = new JsonArray();
             recipesArray.add(jsonElement.getAsJsonObject());
-            List<CommonRecipe> processedRecipes = processRecipesArray(recipesArray);
+            processedRecipes = processRecipesArray(recipesArray);
             System.out.println("Processed " + processedRecipes.size() + " recipes.");
         } else {
             System.err.println("Unexpected JSON format: Not an array or object.");
             System.err.println("JSON content: " + jsonElement.toString()); // Print the raw JSON element
         }
+
+        return processedRecipes;
     }
+
 
     private List<CommonRecipe> processRecipesArray(JsonArray recipesArray) {
         List<CommonRecipe> processedRecipes = new ArrayList<>();
