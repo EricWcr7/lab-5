@@ -17,26 +17,25 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 
 /**
  * DAO for the RecipeSearch Use Case.
  */
 public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
 
-    private static final String API_URL = "https://www.themealdb.com/api/json/v1/1/search.php?s=";
+    private static final String API_URL = "https://www.themealdb.com/api/json/v1/1/search.php?f=";
     private static final String FILE_IO_API_URL = "https://file.io";
+    private static final String FILE_PATH = "all_recipes.json";
     private static final int STATUS_CODE_OK = 200;
-    private static final String FILE_PATH = "recipes.json";
 
     /**
-     * Fetches all recipes from the API by iterating over keywords (a-z).
+     * Fetches all recipes from the API by iterating over keywords (a-z) using the 'f' parameter.
      *
      * @return a list of all CommonRecipe objects
      */
@@ -48,19 +47,16 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         for (char keyword = 'a'; keyword <= 'z'; keyword++) {
             System.out.println("Fetching recipes for keyword: " + keyword);
             List<CommonRecipe> recipes = fetchRecipesByKeyword(String.valueOf(keyword));
-            if (!recipes.isEmpty()) {
-                allRecipes.addAll(recipes);
-                System.out.println("Added " + recipes.size() + " recipes for keyword: " + keyword);
-            } else {
-                System.out.println("No recipes found for keyword: " + keyword);
-            }
+            allRecipes.addAll(recipes); // Add all recipes without checking for duplicates
+            System.out.println("Added " + recipes.size() + " recipes for keyword: " + keyword);
         }
 
         System.out.println("Finished fetching all recipes. Total recipes found: " + allRecipes.size());
+        writeRecipesToFile(allRecipes); // Write all fetched recipes to a single JSON file
+        uploadFileToFileIo(); // Upload the file to File.io
         return allRecipes;
     }
 
-    @Override
     /**
      * Helper method to fetch recipes based on a single character keyword.
      *
@@ -145,27 +141,21 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         return recipes;
     }
 
-    @Override
     /**
-     * Writes the list of recipes in JSON format to a file and uploads it to File.io.
+     * Writes the list of recipes in JSON format to a file.
      *
      * @param recipes the list of recipes to write to the file
      */
     public void writeRecipesToFile(List<CommonRecipe> recipes) {
-        System.out.println("Writing recipes to JSON file.");
+        System.out.println("Writing all recipes to JSON file.");
         final File file = new File(FILE_PATH);
-
-        if (file.exists() && !file.delete()) {
-            System.err.println("Error: Unable to delete existing file.");
-        }
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonContent = gson.toJson(recipes);
 
         try (FileWriter writer = new FileWriter(FILE_PATH)) {
             writer.write(jsonContent);
-            System.out.println("Recipes data written to file successfully.");
-            uploadFileToFileIo();
+            System.out.println("All recipes data written to file successfully.");
         } catch (IOException e) {
             System.err.println("Error while writing to file: " + e.getMessage());
         }
@@ -180,7 +170,6 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
             final HttpClient client = HttpClient.newHttpClient();
             String bearerToken = "Meal Master"; // Replace this with your actual token
 
-            // Use multipart form-data and specify the "file" part as expected
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(FILE_IO_API_URL))
                     .header("Authorization", "Bearer " + bearerToken)
@@ -202,6 +191,13 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         }
     }
 
+    /**
+     * Constructs a multipart request body for file upload.
+     *
+     * @param path the path to the file to upload
+     * @return a BodyPublisher for the multipart file upload
+     * @throws IOException if there is an error reading the file
+     */
     public static HttpRequest.BodyPublisher ofFileUpload(Path path) throws IOException {
         var boundary = "----WebKitFormBoundary";
         var fileBytes = Files.readAllBytes(path);
@@ -215,3 +211,4 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
         return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
     }
 }
+
