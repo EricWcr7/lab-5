@@ -7,4 +7,17 @@ public class DisplayRecipeViewModel extends ViewModel<DisplayRecipeState> {
         super("display the recipe");
         setState(new DisplayRecipeState());
     }
+
+    public String getDishName() {
+        return getState().getDishName();
+    }
+
+    public String getIngredients() {
+        return getState().getIngredients();
+    }
+
+    public String getInstructions() {
+        return getState().getInstructions();
+    }
+
 }
