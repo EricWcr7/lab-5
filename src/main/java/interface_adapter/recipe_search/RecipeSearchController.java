@@ -13,9 +13,6 @@ public class RecipeSearchController {
         this.recipeSearchInteractor = recipeSearchInteractor;
     }
 
-    public void switchToSearchResultView() {
-        recipeSearchInteractor.switchToSearchResultView();
-    }
 
     /**
      * Executes the Recipe Search Use Case.
