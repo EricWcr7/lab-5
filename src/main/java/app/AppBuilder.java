@@ -67,19 +67,19 @@ public class AppBuilder {
         }
     }
 
-    public AppBuilder addSignupView() {
-        signupViewModel = new SignupViewModel();
-        signupView = new SignupView(signupViewModel);
-        System.out.println("Adding Signup View with name: " + signupView.getViewName());
-        cardPanel.add(signupView, signupView.getViewName());
-        return this;
-    }
-
     public AppBuilder addLoginView() {
         loginViewModel = new LoginViewModel();
         loginView = new LoginView(loginViewModel);
         System.out.println("Adding Login View with name: " + loginView.getViewName());
         cardPanel.add(loginView, loginView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addSignupView() {
+        signupViewModel = new SignupViewModel();
+        signupView = new SignupView(signupViewModel);
+        System.out.println("Adding Signup View with name: " + signupView.getViewName());
+        cardPanel.add(signupView, signupView.getViewName());
         return this;
     }
 
@@ -186,8 +186,8 @@ public class AppBuilder {
 
         application.add(cardPanel);
 
-        System.out.println("Setting initial view state to: " + signupView.getViewName());
-        viewManagerModel.setState(signupView.getViewName());
+        System.out.println("Setting initial view state to: " + loginView.getViewName());
+        viewManagerModel.setState(loginView.getViewName());
         viewManagerModel.firePropertyChanged();
 
         return application;
