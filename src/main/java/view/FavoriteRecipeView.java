@@ -4,6 +4,8 @@ import interface_adapter.logout.LogoutController;
 import interface_adapter.recipe_search.RecipeSearchController;
 import interface_adapter.recipe_search.RecipeSearchState;
 import interface_adapter.recipe_search.RecipeSearchViewModel;
+import interface_adapter.favorite_recipe.FavoriteRecipeViewModel;
+import interface_adapter.favorite_recipe.FavoriteRecipeController;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -18,6 +20,7 @@ public class FavoriteRecipeView extends JPanel implements ActionListener, Proper
     private final String viewName = "my favorite recipe";
     private final FavoriteRecipeViewModel favoriteRecipeViewModel;
     private FavoriteRecipeController favoriteRecipeController;
+    private final JButton back;
 
     public FavoriteRecipeView(FavoriteRecipeViewModel favoriteRecipeViewModel) {
         this.favoriteRecipeViewModel = favoriteRecipeViewModel;
@@ -26,7 +29,12 @@ public class FavoriteRecipeView extends JPanel implements ActionListener, Proper
         final JLabel title = new JLabel("my favorite recipe");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        final JPanel buttons = new JPanel();
+        back = new JButton("back to recipe search page");
+        buttons.add(back);
+
         this.add(title);
+        this.add(buttons);
 
     }
 
@@ -42,10 +50,6 @@ public class FavoriteRecipeView extends JPanel implements ActionListener, Proper
 
     public String getViewName() {
         return viewName;
-    }
-
-    public void setLogoutController(LogoutController logoutController) {
-        this.logoutController = logoutController;
     }
 
     public void setFavoriteRecipeController(FavoriteRecipeController favoriteRecipeController) {

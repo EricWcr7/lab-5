@@ -98,6 +98,14 @@ public class RecipeSearchView extends JPanel implements ActionListener, Property
                     }
                 }
         );
+
+        favorite.addActionListener(
+                evt -> {
+                    if (evt.getSource().equals(favorite)) {
+                        recipeSearchController.switchToFavoriteRecipeView();
+                    }
+                }
+        );
     }
 
     @Override

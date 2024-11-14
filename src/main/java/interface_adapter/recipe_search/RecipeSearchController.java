@@ -27,5 +27,9 @@ public class RecipeSearchController {
 
         System.out.println("Search button clicked with keyword: " + searchKeyword);
     }
+
+    public void switchToFavoriteRecipeView() {
+        recipeSearchInteractor.switchToFavoriteRecipeView();
+    }
 }
 
