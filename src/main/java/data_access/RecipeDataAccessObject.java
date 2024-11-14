@@ -35,6 +35,44 @@ public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface, 
     // Holds the list of recipes loaded from the downloaded JSON
     private List<CommonRecipe> cachedRecipes = new ArrayList<>();
 
+    public RecipeDataAccessObject() {
+        // Add a shutdown hook to delete the file from File.io when the application stops
+        Runtime.getRuntime().addShutdownHook(new Thread(this::deleteFileFromFileIo));
+    }
+
+    /**
+     * Deletes the file from File.io using the file key.
+     */
+    private void deleteFileFromFileIo() {
+        if (FILE_KEY.isEmpty()) {
+            System.err.println("File key is empty. Cannot delete file.");
+            return;
+        }
+
+        System.out.println("Deleting file from File.io with key: " + FILE_KEY);
+        try {
+            String deleteUrl = FILE_IO_API_URL + "/" + URLEncoder.encode(FILE_KEY, StandardCharsets.UTF_8);
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(deleteUrl))
+                    .DELETE()
+                    .header("Authorization", "Bearer " + API_KEY)
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == STATUS_CODE_OK) {
+                System.out.println("File deleted successfully: " + response.body());
+            } else {
+                System.err.println("Failed to delete file. Status code: " + response.statusCode());
+                System.err.println("Response body: " + response.body());
+            }
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error during file deletion: " + e.getMessage());
+            Thread.currentThread().interrupt();
+        }
+    }
+
     /**
      * Fetches all recipes from the API by iterating over keywords (a-z) using the 'f' parameter.
      *
