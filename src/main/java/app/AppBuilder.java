@@ -13,6 +13,7 @@ import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
 import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuPresenter;
 import interface_adapter.change_password.*;
 import interface_adapter.choose_recipe.*;
+import interface_adapter.display_recipe.DisplayRecipeViewModel;
 import interface_adapter.login.*;
 import interface_adapter.logout.*;
 import interface_adapter.recipe_search.*;
@@ -21,6 +22,9 @@ import use_case.ReturnToSearchMenu.ReturnToSearchMenuInputBoundary;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuInteractor;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuOutputBoundary;
 import use_case.change_password.*;
+import use_case.choose_recipe.ChooseRecipeInputBoundary;
+import use_case.choose_recipe.ChooseRecipeInteractor;
+import use_case.choose_recipe.ChooseRecipeOutputBoundary;
 import use_case.login.*;
 import use_case.logout.*;
 import use_case.recipe_search.*;
@@ -48,6 +52,8 @@ public class AppBuilder {
     private RecipeSearchViewModel recipeSearchViewModel;
     private ChooseRecipeView chooseRecipeView;
     private ChooseRecipeViewModel chooseRecipeViewModel;
+    private DisplayRecipeView displayRecipeView;
+    private DisplayRecipeViewModel displayRecipeViewModel;
 
     private RecipeSearchInteractor recipeSearchInteractor;
 
@@ -104,6 +110,18 @@ public class AppBuilder {
         chooseRecipeView = new ChooseRecipeView(chooseRecipeViewModel);
         System.out.println("Adding Choose Recipe View with name: " + chooseRecipeView.getViewName());
         cardPanel.add(chooseRecipeView, chooseRecipeView.getViewName());
+        return this;
+    }
+
+    /**
+     * Adds the Display Recipe View to the application.
+     * @return this builder
+     */
+    public AppBuilder addDisplayRecipeView() {
+        displayRecipeViewModel = new DisplayRecipeViewModel();
+        displayRecipeView = new DisplayRecipeView(displayRecipeViewModel);
+        System.out.println("Adding Display Recipe View with name: " + displayRecipeView.getViewName());
+        cardPanel.add(displayRecipeView, displayRecipeView.getViewName());
         return this;
     }
 
@@ -175,6 +193,18 @@ public class AppBuilder {
 
         final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
         recipeSearchView.setRecipeSearchController(recipeSearchController);
+        return this;
+    }
+
+    public AppBuilder addChooseRecipeUseCase(){
+        final ChooseRecipeOutputBoundary chooseRecipeOutputBoundary = new ChooseRecipePresenter(
+                viewManagerModel, chooseRecipeViewModel, displayRecipeViewModel);
+
+        final ChooseRecipeInputBoundary chooseRecipeInteractor = new ChooseRecipeInteractor(
+                chooseRecipeOutputBoundary);
+
+        final ChooseRecipeController chooseRecipeController = new ChooseRecipeController(chooseRecipeInteractor);
+        chooseRecipeView.setChooseRecipeController(chooseRecipeController);
         return this;
     }
 

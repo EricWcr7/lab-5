@@ -21,11 +21,13 @@ public class Main {
                                             .addLoggedInView()
                                             .addRecipeSearchView()
                                             .addChooseRecipeView()
+                                            .addDisplayRecipeView()
                                             .addSignupUseCase()
                                             .addLoginUseCase()
                                             .addChangePasswordUseCase()
                                             .addLogoutUseCase()
                                             .addRecipeSearchUseCase()
+                                            .addChooseRecipeUseCase()
                                             .addReturnToSearchMenuUseCase()
                                             .build();
         application.pack();
