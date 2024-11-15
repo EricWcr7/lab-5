@@ -14,6 +14,9 @@ import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuPresenter;
 import interface_adapter.change_password.*;
 import interface_adapter.choose_recipe.*;
 import interface_adapter.display_recipe.DisplayRecipeViewModel;
+import interface_adapter.edit.EditController;
+import interface_adapter.edit.EditPresenter;
+import interface_adapter.edit.EditViewModel;
 import interface_adapter.favorite_recipe.FavoriteRecipeViewModel;
 import interface_adapter.login.*;
 import interface_adapter.logout.*;
@@ -28,6 +31,9 @@ import use_case.change_password.*;
 import use_case.choose_recipe.ChooseRecipeInputBoundary;
 import use_case.choose_recipe.ChooseRecipeInteractor;
 import use_case.choose_recipe.ChooseRecipeOutputBoundary;
+import use_case.edit.EditInputBoundary;
+import use_case.edit.EditInteractor;
+import use_case.edit.EditOutputBoundary;
 import use_case.favorite_receipe.FavoriteRecipeInputBoundary;
 import use_case.favorite_receipe.FavoriteRecipeInteractor;
 import use_case.favorite_receipe.FavoriteRecipeOutputBoundary;
@@ -62,6 +68,8 @@ public class AppBuilder {
     private DisplayRecipeViewModel displayRecipeViewModel;
     private FavoriteRecipeView favoriteRecipeView;
     private FavoriteRecipeViewModel favoriteRecipeViewModel;
+    private EditView editView;
+    private EditViewModel editViewModel;
 
     private RecipeSearchInteractor recipeSearchInteractor;
 
@@ -141,6 +149,14 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addEditView() {
+        editViewModel = new EditViewModel();
+        editView = new EditView(editViewModel);
+        System.out.println("Adding Edit View with name: " + editView.getViewName());
+        cardPanel.add(editView, editView.getViewName());
+        return this;
+    }
+
     public AppBuilder addSignupUseCase() {
         final SignupOutputBoundary signupOutputBoundary = new SignupPresenter(viewManagerModel,
                 signupViewModel, loginViewModel);
@@ -203,7 +219,7 @@ public class AppBuilder {
 
     public AppBuilder addRecipeSearchUseCase() {
         final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(
-                viewManagerModel, chooseRecipeViewModel, favoriteRecipeViewModel, recipeSearchViewModel);
+                viewManagerModel, chooseRecipeViewModel, favoriteRecipeViewModel, editViewModel, recipeSearchViewModel);
 
         recipeSearchInteractor = new RecipeSearchInteractor(recipeSearchOutputBoundary);
 
@@ -233,6 +249,16 @@ public class AppBuilder {
 
         final FavoriteRecipeController favoriteRecipeController = new FavoriteRecipeController(favoriteRecipeInteractor);
         favoriteRecipeView.setFavoriteRecipeController(favoriteRecipeController);
+        return this;
+    }
+
+    public AppBuilder addEditUseCase() {
+        final EditOutputBoundary editOutputBoundary = new EditPresenter(viewManagerModel, editViewModel);
+
+        final EditInputBoundary editInteractor = new EditInteractor(editOutputBoundary);
+
+        final EditController editController = new EditController(editInteractor);
+        editView.setEditController(editController);
         return this;
     }
 

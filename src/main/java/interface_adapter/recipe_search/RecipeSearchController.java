@@ -31,5 +31,10 @@ public class RecipeSearchController {
     public void switchToFavoriteRecipeView() {
         recipeSearchInteractor.switchToFavoriteRecipeView();
     }
+
+    public void switchToEditView() {
+        recipeSearchInteractor.switchToEditView();
+        System.out.println("RecipeSearchController work");
+    }
 }
 

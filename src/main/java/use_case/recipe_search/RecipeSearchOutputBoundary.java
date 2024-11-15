@@ -18,5 +18,7 @@ public interface RecipeSearchOutputBoundary {
     void prepareFailureView(String errorMessage);
 
     void switchToFavoriteRecipeView();
+
+    void switchToEditView();
 }
 

@@ -1,0 +1,3019 @@
+Index: src/main/java/app/Main.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/app/Main.java b/src/main/java/app/Main.java
+--- a/src/main/java/app/Main.java	
++++ b/src/main/java/app/Main.java	(date 1731614119087)
+@@ -11,28 +11,19 @@
+      * @param args unused arguments
+      */
+     public static void main(String[] args) {
+-        final Integer width = 800;
+-        final Integer height = 600;
+         final AppBuilder appBuilder = new AppBuilder();
+         // TODO: add the Logout Use Case to the app using the appBuilder
+         final JFrame application = appBuilder
+                                             .addLoginView()
+                                             .addSignupView()
+                                             .addLoggedInView()
+-                                            .addRecipeSearchView()
+-                                            .addChooseRecipeView()
+-                                             .addEditView()
+-                                            .addCreateView()
+                                             .addSignupUseCase()
+                                             .addLoginUseCase()
+                                             .addChangePasswordUseCase()
+                                             .addLogoutUseCase()
+-                                            .addRecipeSearchUseCase()
+-                                            .addReturnToSearchMenuUseCase()
+-                                            .addEditRecipeUseCase()
+                                             .build();
++
+         application.pack();
+-        application.setSize(width, height);
+         application.setVisible(true);
+     }
+ }
+Index: src/main/java/app/AppBuilder.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/app/AppBuilder.java b/src/main/java/app/AppBuilder.java
+--- a/src/main/java/app/AppBuilder.java	
++++ b/src/main/java/app/AppBuilder.java	(date 1731614119083)
+@@ -1,48 +1,63 @@
+ package app;
+ 
+ import java.awt.CardLayout;
++
+ import javax.swing.JFrame;
+ import javax.swing.JPanel;
+ import javax.swing.WindowConstants;
+ 
+ import data_access.InMemoryUserDataAccessObject;
+-import data_access.RecipeDataAccessObject;
+-import entity.*;
+-import interface_adapter.*;
+-import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
+-import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuPresenter;
+-import interface_adapter.change_password.*;
+-import interface_adapter.choose_recipe.*;
+-import interface_adapter.edit_recipe.CreateRecipeViewModel;
+-import interface_adapter.edit_recipe.EditRecipeController;
+-import interface_adapter.edit_recipe.EditRecipePresenter;
+-import interface_adapter.edit_recipe.EditRecipeViewModel;
+-import interface_adapter.login.*;
+-import interface_adapter.logout.*;
+-import interface_adapter.recipe_search.*;
+-import interface_adapter.signup.*;
+-import use_case.ReturnToSearchMenu.ReturnToSearchMenuInputBoundary;
+-import use_case.ReturnToSearchMenu.ReturnToSearchMenuInteractor;
+-import use_case.ReturnToSearchMenu.ReturnToSearchMenuOutputBoundary;
+-import use_case.change_password.*;
+-import use_case.edit_recipe.EditRecipeInputBoundary;
+-import use_case.edit_recipe.EditRecipeInteractor;
+-import use_case.edit_recipe.EditRecipeOutputBoundary;
+-import use_case.login.*;
+-import use_case.logout.*;
+-import use_case.recipe_search.*;
+-import use_case.signup.*;
+-import view.*;
++import entity.CommonUserFactory;
++import entity.UserFactory;
++import interface_adapter.ViewManagerModel;
++import interface_adapter.change_password.ChangePasswordController;
++import interface_adapter.change_password.ChangePasswordPresenter;
++import interface_adapter.change_password.LoggedInViewModel;
++import interface_adapter.login.LoginController;
++import interface_adapter.login.LoginPresenter;
++import interface_adapter.login.LoginViewModel;
++import interface_adapter.logout.LogoutController;
++import interface_adapter.logout.LogoutPresenter;
++import interface_adapter.signup.SignupController;
++import interface_adapter.signup.SignupPresenter;
++import interface_adapter.signup.SignupViewModel;
++import use_case.change_password.ChangePasswordInputBoundary;
++import use_case.change_password.ChangePasswordInteractor;
++import use_case.change_password.ChangePasswordOutputBoundary;
++import use_case.login.LoginInputBoundary;
++import use_case.login.LoginInteractor;
++import use_case.login.LoginOutputBoundary;
++import use_case.logout.LogoutInputBoundary;
++import use_case.logout.LogoutInteractor;
++import use_case.logout.LogoutOutputBoundary;
++import use_case.signup.SignupInputBoundary;
++import use_case.signup.SignupInteractor;
++import use_case.signup.SignupOutputBoundary;
++import view.LoggedInView;
++import view.LoginView;
++import view.SignupView;
++import view.ViewManager;
+ 
++/**
++ * The AppBuilder class is responsible for putting together the pieces of
++ * our CA architecture; piece by piece.
++ * <p/>
++ * This is done by adding each View and then adding related Use Cases.
++ */
++// Checkstyle note: you can ignore the "Class Data Abstraction Coupling"
++//                  and the "Class Fan-Out Complexity" issues for this lab; we encourage
++//                  your team to think about ways to refactor the code to resolve these
++//                  if your team decides to work with this as your starter code
++//                  for your final project this term.
+ public class AppBuilder {
+     private final JPanel cardPanel = new JPanel();
+     private final CardLayout cardLayout = new CardLayout();
+-
++    // thought question: is the hard dependency below a problem?
+     private final UserFactory userFactory = new CommonUserFactory();
+-    private final RecipeFactory recipeFactory = new CommonRecipeFactory();
+     private final ViewManagerModel viewManagerModel = new ViewManagerModel();
+     private final ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
+ 
++    // thought question: is the hard dependency below a problem?
+     private final InMemoryUserDataAccessObject userDataAccessObject = new InMemoryUserDataAccessObject();
+ 
+     private SignupView signupView;
+@@ -51,91 +66,48 @@
+     private LoggedInViewModel loggedInViewModel;
+     private LoggedInView loggedInView;
+     private LoginView loginView;
+-    private RecipeSearchView recipeSearchView;
+-    private RecipeSearchViewModel recipeSearchViewModel;
+-    private ChooseRecipeView chooseRecipeView;
+-    private ChooseRecipeViewModel chooseRecipeViewModel;
+-    private CreateView createView;
+-    private EditView editView;
+-    private EditRecipeViewModel editRecipeViewModel;
+-    private CreateRecipeViewModel createRecipeViewModel;
+-
+-
+-    private RecipeSearchInteractor recipeSearchInteractor;
+ 
+     public AppBuilder() {
+         cardPanel.setLayout(cardLayout);
+     }
+ 
+     /**
+-     * Initializes the shared recipe storage with all recipes from the API.
++     * Adds the Signup View to the application.
++     * @return this builder
+      */
+-    private void initializeSharedRecipeStorage() {
+-        if (recipeSearchInteractor != null) {
+-            System.out.println("Calling initializeRecipeStorage in RecipeSearchInteractor...");
+-            recipeSearchInteractor.initializeRecipeStorage();
+-        } else {
+-            System.err.println("RecipeSearchInteractor not initialized. Ensure addRecipeSearchUseCase is called first.");
+-        }
+-    }
+-
+     public AppBuilder addSignupView() {
+         signupViewModel = new SignupViewModel();
+         signupView = new SignupView(signupViewModel);
+-        System.out.println("Adding Signup View with name: " + signupView.getViewName());
+         cardPanel.add(signupView, signupView.getViewName());
+         return this;
+     }
+ 
++    /**
++     * Adds the Login View to the application.
++     * @return this builder
++     */
+     public AppBuilder addLoginView() {
+         loginViewModel = new LoginViewModel();
+         loginView = new LoginView(loginViewModel);
+-        System.out.println("Adding Login View with name: " + loginView.getViewName());
+         cardPanel.add(loginView, loginView.getViewName());
+         return this;
+     }
+ 
++    /**
++     * Adds the LoggedIn View to the application.
++     * @return this builder
++     */
+     public AppBuilder addLoggedInView() {
+         loggedInViewModel = new LoggedInViewModel();
+         loggedInView = new LoggedInView(loggedInViewModel);
+-        System.out.println("Adding LoggedIn View with name: " + loggedInView.getViewName());
+         cardPanel.add(loggedInView, loggedInView.getViewName());
+         return this;
+     }
+ 
+-    public AppBuilder addRecipeSearchView() {
+-        recipeSearchViewModel = new RecipeSearchViewModel();
+-
+-        recipeSearchView = new RecipeSearchView(recipeSearchViewModel);
+-        System.out.println("Adding Recipe Search View with name: " + recipeSearchView.getViewName());
+-        cardPanel.add(recipeSearchView, recipeSearchView.getViewName());
+-        return this;
+-    }
+-
+-    public AppBuilder addChooseRecipeView() {
+-        chooseRecipeViewModel = new ChooseRecipeViewModel();
+-        chooseRecipeView = new ChooseRecipeView(chooseRecipeViewModel);
+-        System.out.println("Adding Choose Recipe View with name: " + chooseRecipeView.getViewName());
+-        cardPanel.add(chooseRecipeView, chooseRecipeView.getViewName());
+-        return this;
+-    }
+-
+-    public AppBuilder addCreateView() {
+-        createRecipeViewModel = new CreateRecipeViewModel();
+-        createView = new CreateView(createRecipeViewModel);
+-        System.out.println("Adding Create View with name: " + createView.getViewName());
+-        cardPanel.add(createView, createView.getViewName());
+-        return this;
+-    }
+-
+-    public AppBuilder addEditView() {
+-        editRecipeViewModel = new EditRecipeViewModel();
+-        editView = new EditView(editRecipeViewModel, createRecipeViewModel);
+-        System.out.println("Adding Edit View with name: " + editView.getViewName());
+-        cardPanel.add(editView, editView.getViewName());
+-        return this;
+-    }
+-
++    /**
++     * Adds the Signup Use Case to the application.
++     * @return this builder
++     */
+     public AppBuilder addSignupUseCase() {
+         final SignupOutputBoundary signupOutputBoundary = new SignupPresenter(viewManagerModel,
+                 signupViewModel, loginViewModel);
+@@ -147,9 +119,13 @@
+         return this;
+     }
+ 
++    /**
++     * Adds the Login Use Case to the application.
++     * @return this builder
++     */
+     public AppBuilder addLoginUseCase() {
+         final LoginOutputBoundary loginOutputBoundary = new LoginPresenter(viewManagerModel,
+-                recipeSearchViewModel, loginViewModel, signupViewModel);
++                loggedInViewModel, loginViewModel);
+         final LoginInputBoundary loginInteractor = new LoginInteractor(
+                 userDataAccessObject, loginOutputBoundary);
+ 
+@@ -158,6 +134,10 @@
+         return this;
+     }
+ 
++    /**
++     * Adds the Change Password Use Case to the application.
++     * @return this builder
++     */
+     public AppBuilder addChangePasswordUseCase() {
+         final ChangePasswordOutputBoundary changePasswordOutputBoundary =
+                 new ChangePasswordPresenter(loggedInViewModel);
+@@ -171,99 +151,35 @@
+         return this;
+     }
+ 
++    /**
++     * Adds the Logout Use Case to the application.
++     * @return this builder
++     */
+     public AppBuilder addLogoutUseCase() {
+         final LogoutOutputBoundary logoutOutputBoundary = new LogoutPresenter(viewManagerModel,
+-                recipeSearchViewModel, loginViewModel);
++                loggedInViewModel, loginViewModel);
+ 
+         final LogoutInputBoundary logoutInteractor =
+                 new LogoutInteractor(userDataAccessObject, logoutOutputBoundary);
+ 
+         final LogoutController logoutController = new LogoutController(logoutInteractor);
+-        recipeSearchView.setLogoutController(logoutController);
++        loggedInView.setLogoutController(logoutController);
+         return this;
+     }
+ 
+-    public AppBuilder addReturnToSearchMenuUseCase() {
+-        final ReturnToSearchMenuOutputBoundary returnToSearchMenuOutputBoundary =
+-                new ReturnToSearchMenuPresenter(viewManagerModel,
+-                        recipeSearchViewModel, chooseRecipeViewModel);
+-
+-        final ReturnToSearchMenuInputBoundary returnToSearchMenuInteractor =
+-                new ReturnToSearchMenuInteractor(returnToSearchMenuOutputBoundary);
+-
+-        final ReturnToSearchMenuController returnToSearchMenuController = new ReturnToSearchMenuController(returnToSearchMenuInteractor);
+-        chooseRecipeView.setReturnToSearchMenuController(returnToSearchMenuController);
+-        return this;
+-    }
+-
+-//    public AppBuilder addRecipeSearchUseCase() {
+-//        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(
+-//                viewManagerModel, chooseRecipeViewModel, recipeSearchViewModel);
+-//
+-//        recipeSearchInteractor = new RecipeSearchInteractor(recipeSearchOutputBoundary);
+-//
+-//        final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
+-//        recipeSearchView.setRecipeSearchController(recipeSearchController);
+-//        return this;
+-
+-
+-    public AppBuilder addRecipeSearchUseCase() {
+-        final RecipeSearchOutputBoundary recipeSearchOutputBoundary = new RecipeSearchPresenter(
+-                viewManagerModel, chooseRecipeViewModel, recipeSearchViewModel);
+-
+-        recipeSearchInteractor = new RecipeSearchInteractor(recipeSearchOutputBoundary);
+-
+-        final RecipeSearchController recipeSearchController = new RecipeSearchController(recipeSearchInteractor);
+-        recipeSearchView.setRecipeSearchController(recipeSearchController);
+-
+-        // 创建 EditRecipe 的相关实例
+-        final EditRecipeOutputBoundary editRecipeOutputBoundary = new EditRecipePresenter(
+-                recipeSearchViewModel, editRecipeViewModel, createRecipeViewModel, viewManagerModel);
+-        final EditRecipeInputBoundary editRecipeInteractor = new EditRecipeInteractor(editRecipeOutputBoundary);
+-        final EditRecipeController editRecipeController = new EditRecipeController(editRecipeInteractor);
+-
+-        // 将 EditRecipeController 设置给 RecipeSearchView
+-        recipeSearchView.setEditRecipeController(editRecipeController);
+-
+-        return this;
+-    }
+-
+-    public AppBuilder addEditRecipeUseCase() {
+-        // Step 1: Initialize the EditRecipePresenter
+-        final EditRecipeOutputBoundary editRecipeOutputBoundary = new EditRecipePresenter(
+-                recipeSearchViewModel, // This is your main menu view model (P3)
+-                editRecipeViewModel,    // This is the view model for the edit recipe view (P4)
+-                createRecipeViewModel,  // This is the view model for the create recipe view (P6)
+-                viewManagerModel);      // View manager to control view transitions
+-
+-        // Step 2: Initialize the EditRecipeInteractor with the output boundary
+-        final EditRecipeInputBoundary editRecipeInteractor = new EditRecipeInteractor(editRecipeOutputBoundary);
+-
+-        // Step 3: Initialize the EditRecipeController with the interactor
+-        final EditRecipeController editRecipeController = new EditRecipeController(editRecipeInteractor);
+-
+-        // Step 4: Bind the controller to EditView and CreateView
+-        editView.setEditRecipeController(editRecipeController);
+-        createView.setEditRecipeController(editRecipeController);
+-
+-        return this;
+-    }
+-
++    /**
++     * Creates the JFrame for the application and initially sets the SignupView to be displayed.
++     * @return the application
++     */
+     public JFrame build() {
+-        final JFrame application = new JFrame("Mealmaster");
++        final JFrame application = new JFrame("Login Example");
+         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+ 
+-        initializeSharedRecipeStorage();
+-
+         application.add(cardPanel);
+ 
+-        System.out.println("Setting initial view state to: " + signupView.getViewName());
+         viewManagerModel.setState(signupView.getViewName());
+         viewManagerModel.firePropertyChanged();
+ 
+         return application;
+     }
+ }
+-
+-
+-
+Index: src/main/java/view/LoginView.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/view/LoginView.java b/src/main/java/view/LoginView.java
+--- a/src/main/java/view/LoginView.java	
++++ b/src/main/java/view/LoginView.java	(date 1731614119081)
+@@ -34,7 +34,7 @@
+     private final JLabel passwordErrorField = new JLabel();
+ 
+     private final JButton logIn;
+-    private final JButton signUp;
++    private final JButton cancel;
+     private LoginController loginController;
+ 
+     public LoginView(LoginViewModel loginViewModel) {
+@@ -53,8 +53,8 @@
+         final JPanel buttons = new JPanel();
+         logIn = new JButton("log in");
+         buttons.add(logIn);
+-        signUp = new JButton("sign up");
+-        buttons.add(signUp);
++        cancel = new JButton("cancel");
++        buttons.add(cancel);
+ 
+         logIn.addActionListener(
+                 new ActionListener() {
+@@ -71,16 +71,7 @@
+                 }
+         );
+ 
+-        signUp.addActionListener(
+-                new ActionListener() {
+-                    public void actionPerformed(ActionEvent evt) {
+-                        if (evt.getSource().equals(signUp)) {
+-                            loginController.switchToSignupView();
+-                        }
+-                    }
+-                }
+-        );
+-
++        cancel.addActionListener(this);
+ 
+         usernameInputField.getDocument().addDocumentListener(new DocumentListener() {
+ 
+Index: src/main/java/view/SignupView.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/view/SignupView.java b/src/main/java/view/SignupView.java
+--- a/src/main/java/view/SignupView.java	
++++ b/src/main/java/view/SignupView.java	(date 1731614119081)
+@@ -184,13 +184,9 @@
+     @Override
+     public void propertyChange(PropertyChangeEvent evt) {
+         final SignupState state = (SignupState) evt.getNewValue();
+-        setFields(state);
+-    }
+-
+-    private void setFields(SignupState state) {
+-        usernameInputField.setText(state.getUsername());
+-        passwordInputField.setText(state.getPassword());
+-        repeatPasswordInputField.setText(state.getPassword());
++        if (state.getUsernameError() != null) {
++            JOptionPane.showMessageDialog(this, state.getUsernameError());
++        }
+     }
+ 
+     public String getViewName() {
+Index: src/main/java/view/ViewManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/view/ViewManager.java b/src/main/java/view/ViewManager.java
+--- a/src/main/java/view/ViewManager.java	
++++ b/src/main/java/view/ViewManager.java	(date 1731614119080)
+@@ -3,7 +3,9 @@
+ import java.awt.CardLayout;
+ import java.beans.PropertyChangeEvent;
+ import java.beans.PropertyChangeListener;
++
+ import javax.swing.JPanel;
++
+ import interface_adapter.ViewManagerModel;
+ 
+ /**
+@@ -26,19 +28,7 @@
+     public void propertyChange(PropertyChangeEvent evt) {
+         if (evt.getPropertyName().equals("state")) {
+             final String viewModelName = (String) evt.getNewValue();
+-            System.out.println("Attempting to show view with name: " + viewModelName); // Debug line
+             cardLayout.show(views, viewModelName);
+         }
+     }
+-
+-    private boolean isViewInCardLayout(String viewName) {
+-        for (var component : views.getComponents()) {
+-            if (viewName.equals(component.getName())) {
+-                return true;
+-            }
+-        }
+-        return false;
+-    }
+ }
+-
+-
+Index: src/main/java/view/LoggedInView.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/view/LoggedInView.java b/src/main/java/view/LoggedInView.java
+--- a/src/main/java/view/LoggedInView.java	
++++ b/src/main/java/view/LoggedInView.java	(date 1731614119079)
+@@ -100,7 +100,11 @@
+                 // This creates an anonymous subclass of ActionListener and instantiates it.
+                 evt -> {
+                     if (evt.getSource().equals(logOut)) {
+-                        this.logoutController.execute();
++                        // TODO: execute the logout use case through the Controller
++                        // 1. get the state out of the loggedInViewModel. It contains the username.
++                        // 2. Execute the logout Controller.
++                        final LoggedInState currentState = loggedInViewModel.getState();
++                        this.logoutController.execute(currentState.getUsername());
+                     }
+                 }
+         );
+Index: src/main/java/view/RecipeSearchResultView.java
+===================================================================
+diff --git a/src/main/java/view/RecipeSearchResultView.java b/src/main/java/view/RecipeSearchResultView.java
+deleted file mode 100644
+--- a/src/main/java/view/RecipeSearchResultView.java	
++++ /dev/null	
+@@ -1,47 +0,0 @@
+-package view;
+-
+-import interface_adapter.choose_recipe.ChooseRecipeViewModel;
+-import interface_adapter.choose_recipe.ChooseRecipeState;
+-
+-import javax.swing.*;
+-import java.awt.*;
+-import java.beans.PropertyChangeEvent;
+-import java.beans.PropertyChangeListener;
+-import java.util.List;
+-
+-public class RecipeSearchResultView extends JPanel implements PropertyChangeListener {
+-    private final ChooseRecipeViewModel chooseRecipeViewModel;
+-
+-    public RecipeSearchResultView(ChooseRecipeViewModel chooseRecipeViewModel) {
+-        this.chooseRecipeViewModel = chooseRecipeViewModel;
+-        this.chooseRecipeViewModel.addPropertyChangeListener(this);
+-        setLayout(new FlowLayout());
+-    }
+-
+-    @Override
+-    public void propertyChange(PropertyChangeEvent evt) {
+-        if ("state".equals(evt.getPropertyName())) {
+-            updateRecipeButtons();
+-        }
+-    }
+-
+-    /**
+-     * Generates buttons based on the list of recipe names in ChooseRecipeState.
+-     */
+-    private void updateRecipeButtons() {
+-        this.removeAll(); // Clear existing buttons
+-
+-        ChooseRecipeState state = chooseRecipeViewModel.getState();
+-        List<String> recipeNames = state.getRecipeNames();
+-
+-        for (String recipeName : recipeNames) {
+-            JButton recipeButton = new JButton(recipeName);
+-            add(recipeButton);
+-        }
+-
+-        revalidate(); // Refresh the UI
+-        repaint();
+-    }
+-}
+-
+-
+Index: src/main/java/view/ChooseRecipeView.java
+===================================================================
+diff --git a/src/main/java/view/ChooseRecipeView.java b/src/main/java/view/ChooseRecipeView.java
+deleted file mode 100644
+--- a/src/main/java/view/ChooseRecipeView.java	
++++ /dev/null	
+@@ -1,105 +0,0 @@
+-package view;
+-
+-import java.awt.FlowLayout;
+-import java.awt.event.ActionEvent;
+-import java.awt.event.ActionListener;
+-import java.beans.PropertyChangeEvent;
+-import java.beans.PropertyChangeListener;
+-import java.util.List;
+-
+-import javax.swing.JButton;
+-import javax.swing.JComboBox;
+-import javax.swing.JPanel;
+-import javax.swing.JTextField;
+-
+-import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
+-import interface_adapter.choose_recipe.ChooseRecipeController;
+-import interface_adapter.choose_recipe.ChooseRecipeState;
+-import interface_adapter.choose_recipe.ChooseRecipeViewModel;
+-
+-public class ChooseRecipeView extends JPanel implements PropertyChangeListener {
+-
+-    private final String viewName = "choose recipe";
+-    private final ChooseRecipeViewModel chooseRecipeViewModel;
+-    private ChooseRecipeController chooseRecipeController;
+-    private ReturnToSearchMenuController returnToSearchMenuController;
+-    private final JButton returnToSearchMenu;
+-    private final JTextField dishInputField = new JTextField(50);
+-    private final JComboBox<String> recipeComboBox = new JComboBox<>(); // ComboBox to hold recipe options
+-
+-    public ChooseRecipeView(ChooseRecipeViewModel chooseRecipeViewModel) {
+-        this.chooseRecipeViewModel = chooseRecipeViewModel;
+-        this.chooseRecipeViewModel.addPropertyChangeListener(this);
+-
+-        returnToSearchMenu = new JButton("Return to Search View");
+-
+-        // Set up search panel with input field and return button
+-        final JPanel searchPanel = new JPanel();
+-        searchPanel.add(dishInputField);
+-        searchPanel.add(returnToSearchMenu);
+-
+-        // Set layout for the main panel
+-        this.setLayout(new FlowLayout());
+-        this.add(searchPanel);
+-        this.add(recipeComboBox); // Add the combo box to the main panel
+-
+-        // Set up listener for the "Return to Search View" button
+-        returnToSearchMenu.addActionListener(evt -> {
+-            if (evt.getSource().equals(returnToSearchMenu)) {
+-                this.returnToSearchMenuController.execute();
+-            }
+-        });
+-
+-        // Set up ActionListener for JComboBox to handle selection events
+-        recipeComboBox.addActionListener(new ActionListener() {
+-            @Override
+-            public void actionPerformed(ActionEvent evt) {
+-                if (recipeComboBox.getSelectedItem() != null) {
+-                    String selectedRecipe = (String) recipeComboBox.getSelectedItem();
+-                    System.out.println("Selected recipe: " + selectedRecipe);
+-                    // Future: Add logic here to display recipe details or trigger other actions
+-                }
+-            }
+-        });
+-    }
+-
+-    public String getViewName() {
+-        return viewName;
+-    }
+-
+-    @Override
+-    public void propertyChange(PropertyChangeEvent evt) {
+-        System.out.println("Property Change Event received with new state: " + evt.getNewValue());
+-        // Update view when ChooseRecipeState changes
+-        final ChooseRecipeState chooseRecipeState = (ChooseRecipeState) evt.getNewValue();
+-        setFields(chooseRecipeState);
+-    }
+-
+-    private void setFields(ChooseRecipeState chooseRecipeState) {
+-        dishInputField.setText(chooseRecipeState.getSearchKeyword());
+-
+-        // Clear existing items in the combo box to display new recipes
+-        recipeComboBox.removeAllItems();
+-
+-        // Populate the combo box with the recipe names
+-        List<String> recipeNames = chooseRecipeState.getRecipeNames();
+-        for (String recipeName : recipeNames) {
+-            recipeComboBox.addItem(recipeName);
+-        }
+-
+-        // Refresh the combo box to display updated recipes
+-        recipeComboBox.revalidate();
+-        recipeComboBox.repaint();
+-    }
+-
+-    public void setReturnToSearchMenuController(ReturnToSearchMenuController returnToSearchMenuController) {
+-        this.returnToSearchMenuController = returnToSearchMenuController;
+-    }
+-
+-    public void setChooseRecipeController(ChooseRecipeController chooseRecipeController) {
+-        this.chooseRecipeController = chooseRecipeController;
+-    }
+-}
+-
+-
+-
+Index: src/main/java/view/RecipeSearchView.java
+===================================================================
+diff --git a/src/main/java/view/RecipeSearchView.java b/src/main/java/view/RecipeSearchView.java
+deleted file mode 100644
+--- a/src/main/java/view/RecipeSearchView.java	
++++ /dev/null	
+@@ -1,160 +0,0 @@
+-package view;
+-
+-import java.awt.Component;
+-import java.awt.event.ActionEvent;
+-import java.awt.event.ActionListener;
+-import java.beans.PropertyChangeEvent;
+-import java.beans.PropertyChangeListener;
+-import javax.swing.*;
+-import javax.swing.event.DocumentEvent;
+-import javax.swing.event.DocumentListener;
+-
+-import interface_adapter.edit_recipe.EditRecipeController;
+-import interface_adapter.logout.LogoutController;
+-import interface_adapter.recipe_search.RecipeSearchController;
+-import interface_adapter.recipe_search.RecipeSearchState;
+-import interface_adapter.recipe_search.RecipeSearchViewModel;
+-
+-public class RecipeSearchView extends JPanel implements ActionListener, PropertyChangeListener {
+-
+-    private final String viewName = "search recipe";
+-    private final RecipeSearchViewModel recipeSearchViewModel;
+-    private RecipeSearchController recipeSearchController;
+-    private LogoutController logoutController;
+-    private EditRecipeController editRecipeController;
+-
+-    private final JButton logOut;
+-    private final JButton edit;
+-    private final JButton favorite;
+-    private final JButton search;
+-
+-    private final JTextField dishInputField = new JTextField(50);
+-
+-    public RecipeSearchView(RecipeSearchViewModel recipeSearchViewModel) {
+-        this.recipeSearchViewModel = recipeSearchViewModel;
+-        this.recipeSearchViewModel.addPropertyChangeListener(this);
+-
+-        final JPanel searchPanel = new JPanel();
+-        search = new JButton("Search");
+-        searchPanel.add(dishInputField);
+-        searchPanel.add(search);
+-        final JLabel title = new JLabel("Please enter the dish you want to search for");
+-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+-
+-        final JPanel buttons = new JPanel();
+-        edit = new JButton("My Edit recipe");
+-        buttons.add(edit);
+-
+-        favorite = new JButton("My favorite recipe");
+-        buttons.add(favorite);
+-
+-        logOut = new JButton("Log Out");
+-        buttons.add(logOut);
+-
+-        this.add(title);
+-        this.add(searchPanel);
+-        this.add(buttons);
+-
+-        dishInputField.getDocument().addDocumentListener(new DocumentListener() {
+-
+-            private void documentListenerHelper() {
+-                final RecipeSearchState currentState = recipeSearchViewModel.getState();
+-                currentState.setSearchKeyWord(dishInputField.getText());
+-                recipeSearchViewModel.setState(currentState);
+-            }
+-
+-            @Override
+-            public void insertUpdate(DocumentEvent e) {
+-                documentListenerHelper();
+-            }
+-
+-            @Override
+-            public void removeUpdate(DocumentEvent e) {
+-                documentListenerHelper();
+-            }
+-
+-            @Override
+-            public void changedUpdate(DocumentEvent e) {
+-                documentListenerHelper();
+-            }
+-        });
+-
+-        search.addActionListener(
+-                new ActionListener() {
+-                    public void actionPerformed(ActionEvent evt) {
+-                        if (evt.getSource().equals(search)) {
+-                            final RecipeSearchState currentState = recipeSearchViewModel.getState();
+-                            // Use searchRecipe instead of execute
+-                            recipeSearchController.execute(
+-                                    currentState.getSearchKeyword()
+-                            );
+-                        }
+-                    }
+-                }
+-        );
+-
+-        logOut.addActionListener(
+-                evt -> {
+-                    if (evt.getSource().equals(logOut)) {
+-                        this.logoutController.execute();
+-                    }
+-                }
+-        );
+-
+-        edit.addActionListener(
+-                evt -> {
+-                    if (evt.getSource().equals(edit)) {
+-                        this.editRecipeController.switchToEditRecipe();
+-                    }
+-                }
+-        );
+-
+-    }
+-
+-    @Override
+-    public void actionPerformed(ActionEvent evt) {
+-        System.out.println("Click " + evt.getActionCommand());
+-    }
+-
+-    @Override
+-    public void propertyChange(PropertyChangeEvent evt) {
+-        final RecipeSearchState state = (RecipeSearchState) evt.getNewValue();
+-        setFields(state);
+-    }
+-
+-//    @Override
+-//    public void propertyChange(PropertyChangeEvent evt) {
+-//        String newViewName = (String) evt.getNewValue();
+-//        if (newViewName.equals(getViewName())) {
+-//            // 显示此视图的逻辑
+-//            this.setVisible(true);
+-//        } else {
+-//            // 隐藏此视图的逻辑
+-//            this.setVisible(false);
+-//        }
+-//    }
+-
+-
+-    public void setEditRecipeController(EditRecipeController controller) {
+-        this.editRecipeController = controller;
+-    }
+-
+-    private void setFields(RecipeSearchState state) {
+-        dishInputField.setText(state.getSearchKeyword());
+-    }
+-
+-    public String getViewName() {
+-        return viewName;
+-    }
+-
+-    public void setLogoutController(LogoutController logoutController) {
+-        this.logoutController = logoutController;
+-    }
+-
+-    public void setRecipeSearchController(RecipeSearchController recipeSearchController) {
+-        this.recipeSearchController = recipeSearchController;
+-    }
+-}
+-
+-
+-
+Index: src/main/java/view/CreateView.java
+===================================================================
+diff --git a/src/main/java/view/CreateView.java b/src/main/java/view/CreateView.java
+deleted file mode 100644
+--- a/src/main/java/view/CreateView.java	
++++ /dev/null	
+@@ -1,74 +0,0 @@
+-package view;
+-
+-import interface_adapter.edit_recipe.CreateRecipeViewModel;
+-import interface_adapter.edit_recipe.EditRecipeController;
+-
+-import javax.swing.*;
+-import java.awt.event.ActionEvent;
+-import java.awt.event.ActionListener;
+-import java.beans.PropertyChangeEvent;
+-import java.beans.PropertyChangeListener;
+-
+-public class CreateView extends JPanel implements ActionListener, PropertyChangeListener {
+-    private final String viewName = "Create Recipe";
+-    private final CreateRecipeViewModel createRecipeViewModel;
+-    private EditRecipeController editRecipeController;
+-
+-    private final JTextField recipeNameField = new JTextField(20);
+-    private final JTextField instructionField = new JTextField(20);
+-    private final JTextField howToCookField = new JTextField(20);
+-
+-    private final JButton confirmButton;
+-    private final JButton backButton;
+-
+-    public CreateView(CreateRecipeViewModel createRecipeViewModel) {
+-        this.createRecipeViewModel = createRecipeViewModel;
+-        this.createRecipeViewModel.addPropertyChangeListener(this);
+-
+-        // 设置布局
+-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+-
+-        // 添加组件
+-        add(new JLabel("Dish Name:"));
+-        add(recipeNameField);
+-
+-        add(new JLabel("Instruction:"));
+-        add(instructionField);
+-
+-        add(new JLabel("How to Cook:"));
+-        add(howToCookField);
+-
+-        // 添加按钮
+-        confirmButton = new JButton("Confirm");
+-        confirmButton.addActionListener(this);
+-        add(confirmButton);
+-
+-        backButton = new JButton("Back");
+-        backButton.addActionListener(this);
+-        add(backButton);
+-    }
+-
+-    @Override
+-    public void actionPerformed(ActionEvent e) {
+-        if (e.getSource() == confirmButton) {
+-            System.out.println("Confirming recipe creation.");
+-            // 可以调用控制器中的方法来处理确认逻辑
+-        } else if (e.getSource() == backButton) {
+-            System.out.println("Returning to Edit Recipe view.");
+-            editRecipeController.switchToEditRecipe();
+-        }
+-    }
+-
+-    @Override
+-    public void propertyChange(PropertyChangeEvent evt) {
+-        // 实现属性更改监听逻辑（如果需要动态更新UI）
+-    }
+-
+-    public String getViewName() {
+-        return viewName;
+-    }
+-
+-    public void setEditRecipeController(EditRecipeController editRecipeController) {
+-        this.editRecipeController = editRecipeController;
+-    }
+-}
+Index: src/main/java/view/EditView.java
+===================================================================
+diff --git a/src/main/java/view/EditView.java b/src/main/java/view/EditView.java
+deleted file mode 100644
+--- a/src/main/java/view/EditView.java	
++++ /dev/null	
+@@ -1,77 +0,0 @@
+-package view;
+-
+-import interface_adapter.edit_recipe.CreateRecipeViewModel;
+-import interface_adapter.edit_recipe.EditRecipeController;
+-import interface_adapter.edit_recipe.EditRecipeViewModel;
+-import interface_adapter.recipe_search.RecipeSearchState;
+-
+-import javax.swing.*;
+-import java.awt.*;
+-import java.awt.event.ActionEvent;
+-import java.awt.event.ActionListener;
+-import java.beans.PropertyChangeEvent;
+-import java.beans.PropertyChangeListener;
+-
+-public class EditView extends JPanel implements ActionListener {
+-    private final String viewname = "Edit View";
+-    private final EditRecipeViewModel editRecipeViewModel;
+-    private final CreateRecipeViewModel createRecipeViewModel;
+-    private EditRecipeController editRecipeController;
+-
+-    private final JButton add;
+-    private final JButton back;
+-
+-    public EditView(EditRecipeViewModel editRecipeViewModel, CreateRecipeViewModel createRecipeViewModel) {
+-        this.editRecipeViewModel = editRecipeViewModel;
+-        this.createRecipeViewModel = createRecipeViewModel;
+-
+-        // 设置布局
+-        setLayout(new BorderLayout());
+-
+-        // 上半部分留空
+-        JPanel topPanel = new JPanel();
+-        add(topPanel, BorderLayout.CENTER);
+-
+-        // 下半部分包含按钮
+-        JPanel bottomPanel = new JPanel();
+-        bottomPanel.setLayout(new FlowLayout());
+-
+-        add = new JButton("+");
+-        back = new JButton("Back");
+-
+-        add.addActionListener(this);
+-        back.addActionListener(this);
+-
+-        bottomPanel.add(add);
+-        bottomPanel.add(back);
+-
+-        add(bottomPanel, BorderLayout.SOUTH);
+-    }
+-
+-    public String getViewName() {
+-        return viewname;
+-    }
+-
+-
+-    public void setEditRecipeController(EditRecipeController editRecipeController) {
+-        this.editRecipeController = editRecipeController;
+-    }
+-
+-    @Override
+-    public void actionPerformed(ActionEvent e) {
+-        if (e.getSource() == add) {
+-            // 调用控制器逻辑来切换到 CreateView
+-            if (editRecipeController != null) {
+-                editRecipeController.switchToCreateRecipe();
+-            }
+-        } else if (e.getSource() == back) {
+-            // 调用控制器逻辑来返回主菜单
+-            if (editRecipeController != null) {
+-                editRecipeController.switchToMainMenu();
+-            }
+-        }
+-    }
+-}
+-
+-
+-
+Index: src/main/java/entity/CommonRecipe.java
+===================================================================
+diff --git a/src/main/java/entity/CommonRecipe.java b/src/main/java/entity/CommonRecipe.java
+deleted file mode 100644
+--- a/src/main/java/entity/CommonRecipe.java	
++++ /dev/null	
+@@ -1,53 +0,0 @@
+-package entity;
+-
+-import java.util.Map;
+-
+-/**
+- * Implementation of the Recipe interface representing a common recipe.
+- */
+-public class CommonRecipe implements Recipe {
+-    private final String id;
+-    private final String name;
+-    private final String category;
+-    private final String instructions;
+-    private final Map<String, String> ingredientMeasureMap;
+-
+-    /**
+-     * Constructs a CommonRecipe object with specified details.
+-     *
+-     * @param id the ID of the recipe
+-     * @param name the name of the recipe
+-     * @param category the category of the recipe
+-     * @param instructions the cooking instructions
+-     * @param ingredientMeasureMap the ingredient and measurement of the recipe
+-     */
+-    public CommonRecipe(String id, String name, String category, String instructions,
+-                        Map<String, String> ingredientMeasureMap) {
+-        this.id = id;
+-        this.name = name;
+-        this.category = category;
+-        this.instructions = instructions;
+-        this.ingredientMeasureMap = ingredientMeasureMap;
+-    }
+-
+-    @Override
+-    public String getId() {
+-        return id;
+-    }
+-
+-    @Override
+-    public String getName() {
+-        return name;
+-    }
+-
+-    @Override
+-    public String getCategory() {
+-        return category;
+-    }
+-
+-    @Override
+-    public String getInstructions() {
+-        return instructions;
+-    }
+-
+-}
+Index: src/main/java/entity/Recipe.java
+===================================================================
+diff --git a/src/main/java/entity/Recipe.java b/src/main/java/entity/Recipe.java
+deleted file mode 100644
+--- a/src/main/java/entity/Recipe.java	
++++ /dev/null	
+@@ -1,36 +0,0 @@
+-package entity;
+-
+-/**
+- * The representation of a recipe in the program.
+- */
+-public interface Recipe {
+-
+-    /**
+-     * Gets the ID of the recipe.
+-     *
+-     * @return the ID of the recipe
+-     */
+-    String getId();
+-
+-    /**
+-     * Gets the name of the recipe.
+-     *
+-     * @return the name of the recipe
+-     */
+-    String getName();
+-
+-    /**
+-     * Gets the category of the recipe.
+-     *
+-     * @return the category of the recipe
+-     */
+-    String getCategory();
+-
+-    /**
+-     * Gets the cooking instructions for the recipe.
+-     *
+-     * @return the cooking instructions
+-     */
+-    String getInstructions();
+-
+-}
+Index: src/main/java/entity/RecipeFactory.java
+===================================================================
+diff --git a/src/main/java/entity/RecipeFactory.java b/src/main/java/entity/RecipeFactory.java
+deleted file mode 100644
+--- a/src/main/java/entity/RecipeFactory.java	
++++ /dev/null	
+@@ -1,22 +0,0 @@
+-package entity;
+-
+-import java.util.Map;
+-
+-/**
+- * Factory interface for creating recipe instances.
+- */
+-public interface RecipeFactory {
+-
+-    /**
+-     * Creates a recipe with the specified details.
+-     *
+-     * @param id the ID of the recipe
+-     * @param name the name of the recipe
+-     * @param category the category of the recipe
+-     * @param instructions the cooking instructions
+-     * @param ingredientMeasureMap the ingredient and measurement of the recipe
+-     * @return a Recipe instance with the specified details
+-     */
+-    Recipe createRecipe(String id, String name, String category,
+-                        String instructions, Map<String, String> ingredientMeasureMap);
+-}
+Index: src/main/java/entity/CommonRecipeFactory.java
+===================================================================
+diff --git a/src/main/java/entity/CommonRecipeFactory.java b/src/main/java/entity/CommonRecipeFactory.java
+deleted file mode 100644
+--- a/src/main/java/entity/CommonRecipeFactory.java	
++++ /dev/null	
+@@ -1,24 +0,0 @@
+-package entity;
+-
+-import java.util.Map;
+-/**
+- * Factory for creating instances of CommonRecipe.
+- */
+-public class CommonRecipeFactory implements RecipeFactory {
+-
+-    /**
+-     * Creates a CommonRecipe with the specified details.
+-     *
+-     * @param id the ID of the recipe
+-     * @param name the name of the recipe
+-     * @param category the category of the recipe
+-     * @param instructions the cooking instructions
+-     * @param ingredientMeasureMap the ingredient and measurement of the recipe
+-     * @return a new CommonRecipe instance with the specified details
+-     */
+-    @Override
+-    public Recipe createRecipe(String id, String name, String category,
+-                               String instructions, Map<String, String> ingredientMeasureMap) {
+-        return new CommonRecipe(id, name, category, instructions, ingredientMeasureMap);
+-    }
+-}
+Index: src/main/java/use_case/login/LoginInteractor.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/use_case/login/LoginInteractor.java b/src/main/java/use_case/login/LoginInteractor.java
+--- a/src/main/java/use_case/login/LoginInteractor.java	
++++ b/src/main/java/use_case/login/LoginInteractor.java	(date 1731614119073)
+@@ -37,10 +37,4 @@
+             }
+         }
+     }
+-
+-    public void switchToSignupView() {
+-        loginPresenter.switchToSignupView();
+-    }
+ }
+-
+-
+Index: src/main/java/use_case/login/LoginInputBoundary.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/use_case/login/LoginInputBoundary.java b/src/main/java/use_case/login/LoginInputBoundary.java
+--- a/src/main/java/use_case/login/LoginInputBoundary.java	
++++ b/src/main/java/use_case/login/LoginInputBoundary.java	(date 1731614119072)
+@@ -10,6 +10,4 @@
+      * @param loginInputData the input data
+      */
+     void execute(LoginInputData loginInputData);
+-
+-    void switchToSignupView();
+ }
+Index: src/main/java/use_case/login/LoginOutputBoundary.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/use_case/login/LoginOutputBoundary.java b/src/main/java/use_case/login/LoginOutputBoundary.java
+--- a/src/main/java/use_case/login/LoginOutputBoundary.java	
++++ b/src/main/java/use_case/login/LoginOutputBoundary.java	(date 1731614119072)
+@@ -15,6 +15,4 @@
+      * @param errorMessage the explanation of the failure
+      */
+     void prepareFailView(String errorMessage);
+-
+-    void switchToSignupView();
+ }
+Index: src/main/java/use_case/logout/LogoutInteractor.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/use_case/logout/LogoutInteractor.java b/src/main/java/use_case/logout/LogoutInteractor.java
+--- a/src/main/java/use_case/logout/LogoutInteractor.java	
++++ b/src/main/java/use_case/logout/LogoutInteractor.java	(date 1731614119071)
+@@ -9,14 +9,23 @@
+ 
+     public LogoutInteractor(LogoutUserDataAccessInterface userDataAccessInterface,
+                             LogoutOutputBoundary logoutOutputBoundary) {
++        // TODO: save the DAO and Presenter in the instance variables.
++        // Which parameter is the DAO and which is the presenter?
+         this.userDataAccessObject = userDataAccessInterface;
+         this.logoutPresenter = logoutOutputBoundary;
+     }
+ 
+     @Override
+-    public void execute() {
++    public void execute(LogoutInputData logoutInputData) {
++        // TODO: implement the logic of the Logout Use Case (depends on the LogoutInputData.java TODO)
++        // * get the username out of the input data,
++        // * set the username to null in the DAO
++        // * instantiate the `LogoutOutputData`, which needs to contain the username.
++        // * tell the presenter to prepare a success view.
++        final String username = logoutInputData.getUsername();
+         userDataAccessObject.setCurrentUsername(null);
+-        logoutPresenter.prepareSuccessView();
++        final LogoutOutputData logoutOutputData = new LogoutOutputData(username, false);
++        logoutPresenter.prepareSuccessView(logoutOutputData);
+     }
+ }
+ 
+Index: src/main/java/use_case/logout/LogoutInputBoundary.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/use_case/logout/LogoutInputBoundary.java b/src/main/java/use_case/logout/LogoutInputBoundary.java
+--- a/src/main/java/use_case/logout/LogoutInputBoundary.java	
++++ b/src/main/java/use_case/logout/LogoutInputBoundary.java	(date 1731614119070)
+@@ -7,6 +7,7 @@
+ 
+     /**
+      * Executes the Logout use case.
++     * @param LogoutInputData the input data
+      */
+-    void execute();
++    void execute(LogoutInputData LogoutInputData);
+ }
+Index: src/main/java/use_case/logout/LogoutOutputBoundary.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/use_case/logout/LogoutOutputBoundary.java b/src/main/java/use_case/logout/LogoutOutputBoundary.java
+--- a/src/main/java/use_case/logout/LogoutOutputBoundary.java	
++++ b/src/main/java/use_case/logout/LogoutOutputBoundary.java	(date 1731614119069)
+@@ -6,8 +6,9 @@
+ public interface LogoutOutputBoundary {
+     /**
+      * Prepares the success view for the Login Use Case.
++     * @param outputData the output data
+      */
+-    void prepareSuccessView();
++    void prepareSuccessView(LogoutOutputData outputData);
+ 
+     /**
+      * Prepares the failure view for the Login Use Case.
+Index: src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInputData.java
+===================================================================
+diff --git a/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInputData.java b/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInputData.java
+deleted file mode 100644
+--- a/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInputData.java	
++++ /dev/null	
+@@ -1,13 +0,0 @@
+-package use_case.ReturnToSearchMenu;
+-
+-public class ReturnToSearchMenuInputData {
+-    private final String searchKeyword;
+-
+-    public ReturnToSearchMenuInputData(String searchKeyword) {
+-        this.searchKeyword = searchKeyword;
+-    }
+-
+-    public String getSearchKeyword() {
+-        return searchKeyword;
+-    }
+-}
+Index: src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInteractor.java
+===================================================================
+diff --git a/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInteractor.java b/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInteractor.java
+deleted file mode 100644
+--- a/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInteractor.java	
++++ /dev/null	
+@@ -1,14 +0,0 @@
+-package use_case.ReturnToSearchMenu;
+-
+-public class ReturnToSearchMenuInteractor implements ReturnToSearchMenuInputBoundary{
+-    private ReturnToSearchMenuOutputBoundary returnToSearchMenuPresenter;
+-
+-    public ReturnToSearchMenuInteractor(ReturnToSearchMenuOutputBoundary returnToSearchMenuPresenter) {
+-        this.returnToSearchMenuPresenter = returnToSearchMenuPresenter;
+-    }
+-
+-    @Override
+-    public void execute() {
+-        returnToSearchMenuPresenter.prepareSuccessView();
+-    }
+-}
+Index: src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuOutputData.java
+===================================================================
+diff --git a/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuOutputData.java b/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuOutputData.java
+deleted file mode 100644
+--- a/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuOutputData.java	
++++ /dev/null	
+@@ -1,13 +0,0 @@
+-package use_case.ReturnToSearchMenu;
+-
+-public class ReturnToSearchMenuOutputData {
+-    private final String searchKeyword;
+-
+-    public ReturnToSearchMenuOutputData(String searchKeyword) {
+-        this.searchKeyword = searchKeyword;
+-    }
+-
+-    public String getSearchKeyword() {
+-        return searchKeyword;
+-    }
+-}
+Index: src/main/java/use_case/recipe_search/RecipeSearchInputData.java
+===================================================================
+diff --git a/src/main/java/use_case/recipe_search/RecipeSearchInputData.java b/src/main/java/use_case/recipe_search/RecipeSearchInputData.java
+deleted file mode 100644
+--- a/src/main/java/use_case/recipe_search/RecipeSearchInputData.java	
++++ /dev/null	
+@@ -1,13 +0,0 @@
+-package use_case.recipe_search;
+-
+-public class RecipeSearchInputData {
+-    private final String searchKeyword;
+-
+-    public RecipeSearchInputData(String searchKeyword) {
+-        this.searchKeyword = searchKeyword;
+-    }
+-
+-    public String getSearchKeyword() {
+-        return searchKeyword;
+-    }
+-}
+Index: src/main/java/use_case/recipe_search/RecipeSearchInteractor.java
+===================================================================
+diff --git a/src/main/java/use_case/recipe_search/RecipeSearchInteractor.java b/src/main/java/use_case/recipe_search/RecipeSearchInteractor.java
+deleted file mode 100644
+--- a/src/main/java/use_case/recipe_search/RecipeSearchInteractor.java	
++++ /dev/null	
+@@ -1,85 +0,0 @@
+-package use_case.recipe_search;
+-
+-import data_access.RecipeDataAccessObject;
+-import entity.CommonRecipe;
+-
+-import java.util.List;
+-
+-/**
+- * The Recipe Search Interactor.
+- */
+-public class RecipeSearchInteractor implements RecipeSearchInputBoundary {
+-    private final RecipeSearchOutputBoundary recipeSearchPresenter;
+-    private final RecipeDataAccessObject recipeDataAccessObject;
+-    private boolean recipesLoaded = false;  // Flag to ensure loading from cloud only once
+-
+-    /**
+-     * Constructor for RecipeSearchInteractor.
+-     *
+-     * @param recipeSearchPresenter the output boundary (presenter) to display results
+-     */
+-    public RecipeSearchInteractor(RecipeSearchOutputBoundary recipeSearchPresenter) {
+-        this.recipeSearchPresenter = recipeSearchPresenter;
+-        this.recipeDataAccessObject = new RecipeDataAccessObject(); // Instantiate internally
+-    }
+-
+-    /**
+-     * Executes the search use case based on a search keyword.
+-     *
+-     * @param recipeSearchInputData the input data containing the search keyword
+-     */
+-    @Override
+-    public void execute(RecipeSearchInputData recipeSearchInputData) {
+-        // Ensure recipes are loaded from the cloud only once
+-        if (!recipesLoaded) {
+-            System.out.println("Loading recipes from cloud for the first time...");
+-            recipeDataAccessObject.loadRecipesFromCloud();
+-            recipesLoaded = true;
+-        }
+-
+-        final String searchKeyword = recipeSearchInputData.getSearchKeyword();
+-        System.out.println("Interactor received search keyword: " + searchKeyword);
+-
+-        try {
+-            // Use cached recipes to search for the keyword
+-            List<CommonRecipe> recipes = recipeDataAccessObject.searchRecipes(searchKeyword);
+-
+-            // Check if any recipes were found
+-            if (recipes.isEmpty()) {
+-                System.out.println("No recipes found for keyword: " + searchKeyword);
+-                recipeSearchPresenter.prepareFailureView("No recipes found for keyword: " + searchKeyword);
+-            } else {
+-                System.out.println("Recipes found: " + recipes.size());
+-                RecipeSearchOutputData recipeSearchOutputData = new RecipeSearchOutputData(searchKeyword, recipes);
+-                recipeSearchPresenter.prepareSuccessView(recipeSearchOutputData);
+-            }
+-        } catch (Exception e) {
+-            System.out.println("An error occurred: " + e.getMessage());
+-            recipeSearchPresenter.prepareFailureView("An error occurred while searching for recipes: " + e.getMessage());
+-        }
+-    }
+-
+-    /**
+-     * Fetches all recipes from the API and stores them to the shared file for global access.
+-     * Should be called once to initialize the recipe storage.
+-     */
+-    public void initializeRecipeStorage() {
+-        System.out.println("Initializing shared recipe storage...");
+-        try {
+-            // Fetch all recipes (from 'a' to 'z') and cache them in RecipeDataAccessObject
+-            List<CommonRecipe> allRecipes = recipeDataAccessObject.fetchAllRecipes();
+-            System.out.println("Total recipes fetched: " + allRecipes.size());
+-
+-            // Write all recipes to a shared JSON file and upload it
+-            recipeDataAccessObject.writeRecipesToFile(allRecipes);
+-            System.out.println("Shared recipe storage initialized successfully.");
+-        } catch (Exception e) {
+-            System.err.println("Failed to initialize recipe storage: " + e.getMessage());
+-        }
+-    }
+-}
+-
+-
+-
+-
+-
+Index: src/main/java/use_case/recipe_search/RecipeSearchOutputData.java
+===================================================================
+diff --git a/src/main/java/use_case/recipe_search/RecipeSearchOutputData.java b/src/main/java/use_case/recipe_search/RecipeSearchOutputData.java
+deleted file mode 100644
+--- a/src/main/java/use_case/recipe_search/RecipeSearchOutputData.java	
++++ /dev/null	
+@@ -1,23 +0,0 @@
+-package use_case.recipe_search;
+-
+-import entity.CommonRecipe;
+-import java.util.List;
+-
+-public class RecipeSearchOutputData {
+-    private final String searchKeyword;
+-    private final List<CommonRecipe> recipes;
+-
+-    public RecipeSearchOutputData(String searchKeyword, List<CommonRecipe> recipes) {
+-        this.searchKeyword = searchKeyword;
+-        this.recipes = recipes;
+-    }
+-
+-    public String getSearchKeyword() {
+-        return searchKeyword;
+-    }
+-
+-    public List<CommonRecipe> getRecipes() {
+-        return recipes;
+-    }
+-}
+-
+Index: src/main/java/use_case/recipe_search/RecipeSearchInputBoundary.java
+===================================================================
+diff --git a/src/main/java/use_case/recipe_search/RecipeSearchInputBoundary.java b/src/main/java/use_case/recipe_search/RecipeSearchInputBoundary.java
+deleted file mode 100644
+--- a/src/main/java/use_case/recipe_search/RecipeSearchInputBoundary.java	
++++ /dev/null	
+@@ -1,15 +0,0 @@
+-package use_case.recipe_search;
+-
+-/**
+- * Input Boundary for actions related to recipe search.
+- */
+-public interface RecipeSearchInputBoundary {
+-
+-    /**
+-     * Executes the recipe search use case.
+-     * @param recipeSearchInputData the input data
+-     */
+-    void execute(RecipeSearchInputData recipeSearchInputData);
+-}
+-
+-
+Index: src/main/java/use_case/recipe_search/RecipeSearchOutputBoundary.java
+===================================================================
+diff --git a/src/main/java/use_case/recipe_search/RecipeSearchOutputBoundary.java b/src/main/java/use_case/recipe_search/RecipeSearchOutputBoundary.java
+deleted file mode 100644
+--- a/src/main/java/use_case/recipe_search/RecipeSearchOutputBoundary.java	
++++ /dev/null	
+@@ -1,20 +0,0 @@
+-package use_case.recipe_search;
+-
+-/**
+- * The output boundary for the RecipeSearch Use Case.
+- */
+-public interface RecipeSearchOutputBoundary {
+-
+-    /**
+-     * Prepares the success view for the RecipeSearch Use Case.
+-     * @param outputData the output data
+-     */
+-    void prepareSuccessView(RecipeSearchOutputData outputData);
+-
+-    /**
+-     * Prepares the failure view for the RecipeSearch Use Case.
+-     * @param errorMessage the explanation of the failure
+-     */
+-    void prepareFailureView(String errorMessage);
+-}
+-
+Index: src/main/java/use_case/recipe_search/RecipeSearchDataAccessInterface.java
+===================================================================
+diff --git a/src/main/java/use_case/recipe_search/RecipeSearchDataAccessInterface.java b/src/main/java/use_case/recipe_search/RecipeSearchDataAccessInterface.java
+deleted file mode 100644
+--- a/src/main/java/use_case/recipe_search/RecipeSearchDataAccessInterface.java	
++++ /dev/null	
+@@ -1,30 +0,0 @@
+-package use_case.recipe_search;
+-
+-import java.util.List;
+-import entity.CommonRecipe;
+-
+-/**
+- * DAO for the RecipeSearch Use Case.
+- */
+-public interface RecipeSearchDataAccessInterface {
+-
+-    /**
+-     * Fetches all recipes from the API and returns a list of recipes.
+-     * This is intended to gather the full set of recipes for shared storage.
+-     *
+-     * @return a list of all recipes from the API
+-     * @throws Exception if there is an error during the fetch
+-     */
+-    List<CommonRecipe> fetchAllRecipes() throws Exception;
+-
+-    List<CommonRecipe> fetchRecipesByKeyword(String searchKeyword) throws Exception;
+-
+-    /**
+-     * Writes a list of recipes to a file and uploads the file to shared storage.
+-     *
+-     * @param recipes the list of recipes to write to the file
+-     */
+-    void writeRecipesToFile(List<CommonRecipe> recipes);
+-}
+-
+-
+Index: src/main/java/use_case/edit_recipe/EditRecipeInteractor.java
+===================================================================
+diff --git a/src/main/java/use_case/edit_recipe/EditRecipeInteractor.java b/src/main/java/use_case/edit_recipe/EditRecipeInteractor.java
+deleted file mode 100644
+--- a/src/main/java/use_case/edit_recipe/EditRecipeInteractor.java	
++++ /dev/null	
+@@ -1,26 +0,0 @@
+-package use_case.edit_recipe;
+-
+-public class EditRecipeInteractor implements EditRecipeInputBoundary {
+-    private final EditRecipeOutputBoundary outputBoundary;
+-
+-    public EditRecipeInteractor(EditRecipeOutputBoundary outputBoundary) {
+-        this.outputBoundary = outputBoundary;
+-    }
+-
+-    @Override
+-    public void switchToEditView() {
+-        outputBoundary.showEditScreen();
+-        System.out.println(" P3 to P4, in interactor");
+-        // P3 to P4, call outputboundary
+-    }
+-
+-    @Override
+-    public void switchToCreateRecipe() {
+-        outputBoundary.showCreateRecipeScreen(); // P4 to P6, call outputboundary
+-    }
+-
+-    @Override
+-    public void switchToMainMenu() {
+-        outputBoundary.showMainMenu(); // P4 to P3, call outputBoundary
+-    }
+-}
+\ No newline at end of file
+Index: src/main/java/use_case/edit_recipe/EditRecipeInputBoundary.java
+===================================================================
+diff --git a/src/main/java/use_case/edit_recipe/EditRecipeInputBoundary.java b/src/main/java/use_case/edit_recipe/EditRecipeInputBoundary.java
+deleted file mode 100644
+--- a/src/main/java/use_case/edit_recipe/EditRecipeInputBoundary.java	
++++ /dev/null	
+@@ -1,11 +0,0 @@
+-package use_case.edit_recipe;
+-
+-public interface EditRecipeInputBoundary {
+-    void switchToEditView();
+-    //P3 to P4
+-    void switchToCreateRecipe();
+-    //P4 to P6
+-    void switchToMainMenu();
+-    //P4 to P3
+-}
+-
+Index: src/main/java/use_case/edit_recipe/EditRecipeOutputBoundary.java
+===================================================================
+diff --git a/src/main/java/use_case/edit_recipe/EditRecipeOutputBoundary.java b/src/main/java/use_case/edit_recipe/EditRecipeOutputBoundary.java
+deleted file mode 100644
+--- a/src/main/java/use_case/edit_recipe/EditRecipeOutputBoundary.java	
++++ /dev/null	
+@@ -1,12 +0,0 @@
+-package use_case.edit_recipe;
+-
+-public interface EditRecipeOutputBoundary {
+-    void showEditScreen();
+-    // show P4
+-    void showCreateRecipeScreen();
+-    // show P6
+-    void showMainMenu();
+-    // show P3
+-}
+-
+-
+Index: src/main/java/data_access/RecipeDataAccessObject.java
+===================================================================
+diff --git a/src/main/java/data_access/RecipeDataAccessObject.java b/src/main/java/data_access/RecipeDataAccessObject.java
+deleted file mode 100644
+--- a/src/main/java/data_access/RecipeDataAccessObject.java	
++++ /dev/null	
+@@ -1,397 +0,0 @@
+-package data_access;
+-
+-import com.google.gson.*;
+-import entity.CommonRecipe;
+-import use_case.recipe_search.RecipeSearchDataAccessInterface;
+-
+-import java.io.File;
+-import java.io.FileWriter;
+-import java.io.IOException;
+-import java.net.URI;
+-import java.net.URLEncoder;
+-import java.net.http.HttpClient;
+-import java.net.http.HttpRequest;
+-import java.net.http.HttpResponse;
+-import java.nio.charset.StandardCharsets;
+-import java.nio.file.Files;
+-import java.nio.file.Path;
+-import java.util.ArrayList;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
+-
+-/**
+- * DAO for the RecipeSearch Use Case.
+- */
+-public class RecipeDataAccessObject implements RecipeSearchDataAccessInterface {
+-
+-    private static final String API_URL = "https://www.themealdb.com/api/json/v1/1/search.php?f=";
+-    private static final String FILE_IO_API_URL = "https://file.io";
+-    private static final String FILE_PATH = "all_recipes.json";
+-    private static String FILE_KEY = ""; // Replace with actual file key after upload
+-    private static final int STATUS_CODE_OK = 200;
+-    // Holds the list of recipes loaded from the downloaded JSON
+-    private List<CommonRecipe> cachedRecipes = new ArrayList<>();
+-
+-    /**
+-     * Fetches all recipes from the API by iterating over keywords (a-z) using the 'f' parameter.
+-     *
+-     * @return a list of all CommonRecipe objects
+-     */
+-    @Override
+-    public List<CommonRecipe> fetchAllRecipes() {
+-        System.out.println("Starting to fetch all recipes from API...");
+-        List<CommonRecipe> allRecipes = new ArrayList<>();
+-
+-        for (char keyword = 'a'; keyword <= 'z'; keyword++) {
+-            System.out.println("Fetching recipes for keyword: " + keyword);
+-            List<CommonRecipe> recipes = fetchRecipesByKeyword(String.valueOf(keyword));
+-            allRecipes.addAll(recipes); // Add all recipes without checking for duplicates
+-            System.out.println("Added " + recipes.size() + " recipes for keyword: " + keyword);
+-        }
+-
+-        System.out.println("Finished fetching all recipes. Total recipes found: " + allRecipes.size());
+-        writeRecipesToFile(allRecipes); // Write all fetched recipes to a single JSON file
+-        uploadFileToFileIo(); // Upload the file to File.io
+-        return allRecipes;
+-    }
+-
+-    /**
+-     * Helper method to fetch recipes based on a single character keyword.
+-     *
+-     * @param keyword the keyword to search for recipes
+-     * @return a list of CommonRecipe objects matching the keyword
+-     */
+-    public List<CommonRecipe> fetchRecipesByKeyword(String keyword) {
+-        List<CommonRecipe> recipes = new ArrayList<>();
+-
+-        try {
+-            final String url = API_URL + URLEncoder.encode(keyword, StandardCharsets.UTF_8);
+-            final HttpClient client = HttpClient.newHttpClient();
+-            final HttpRequest request = HttpRequest.newBuilder()
+-                    .uri(URI.create(url))
+-                    .build();
+-
+-            final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+-
+-            if (response.statusCode() == STATUS_CODE_OK) {
+-                System.out.println("Successful response for keyword: " + keyword);
+-                recipes = parseRecipes(response.body());
+-            } else {
+-                System.err.println("Error: Received HTTP " + response.statusCode() + " for keyword: " + keyword);
+-            }
+-        } catch (IOException | InterruptedException e) {
+-            System.err.println("Error fetching recipes for keyword " + keyword + ": " + e.getMessage());
+-            Thread.currentThread().interrupt();
+-        }
+-
+-        return recipes;
+-    }
+-
+-    /**
+-     * Parses the JSON response and converts it to a list of CommonRecipe objects.
+-     *
+-     * @param responseBody the JSON response body from the API
+-     * @return a list of CommonRecipe objects parsed from the response
+-     */
+-    private List<CommonRecipe> parseRecipes(String responseBody) {
+-        System.out.println("Parsing recipes.");
+-        List<CommonRecipe> recipes = new ArrayList<>();
+-        JsonElement jsonElement = JsonParser.parseString(responseBody);
+-
+-        // Check if the root element is an object
+-        if (jsonElement.isJsonObject()) {
+-            JsonObject jsonObject = jsonElement.getAsJsonObject();
+-
+-            // Check if "meals" exists and handle it according to its type
+-            if (jsonObject.has("meals")) {
+-                JsonElement mealsElement = jsonObject.get("meals");
+-
+-                if (mealsElement.isJsonArray()) {
+-                    // Process as a JsonArray if it's an array
+-                    JsonArray mealsArray = mealsElement.getAsJsonArray();
+-                    System.out.println("Number of recipes found in response: " + mealsArray.size());
+-                    recipes.addAll(processMealsArray(mealsArray));
+-                } else if (mealsElement.isJsonObject()) {
+-                    // Wrap a single JsonObject in an array if it's an object
+-                    System.out.println("Single meal object found in response, wrapping in array.");
+-                    JsonArray mealsArray = new JsonArray();
+-                    mealsArray.add(mealsElement.getAsJsonObject());
+-                    recipes.addAll(processMealsArray(mealsArray));
+-                } else if (mealsElement.isJsonNull()) {
+-                    // Handle null case gracefully
+-                    System.out.println("No recipes found for keyword: null response for 'meals'.");
+-                } else if (mealsElement.isJsonPrimitive()) {
+-                    // Handle unexpected primitive case
+-                    System.out.println("Unexpected format for 'meals': JsonPrimitive (likely no recipes found for keyword).");
+-                } else {
+-                    // Log unexpected format for meals
+-                    System.err.println("Unexpected format for 'meals': " + mealsElement.getClass().getName());
+-                }
+-            } else {
+-                System.out.println("No 'meals' field found in the API response.");
+-            }
+-        } else {
+-            System.err.println("Unexpected JSON format: Root element is not a JsonObject.");
+-        }
+-
+-        return recipes;
+-    }
+-
+-    /**
+-     * Processes the JsonArray of meals and converts each meal into a CommonRecipe object.
+-     *
+-     * @param mealsArray the JsonArray containing meal data
+-     * @return a list of CommonRecipe objects
+-     */
+-    private List<CommonRecipe> processMealsArray(JsonArray mealsArray) {
+-        List<CommonRecipe> recipes = new ArrayList<>();
+-
+-        for (int i = 0; i < mealsArray.size(); i++) {
+-            JsonObject mealObject = mealsArray.get(i).getAsJsonObject();
+-
+-            String id = mealObject.has("idMeal") && !mealObject.get("idMeal").isJsonNull()
+-                    ? mealObject.get("idMeal").getAsString() : "";
+-            String name = mealObject.has("strMeal") && !mealObject.get("strMeal").isJsonNull()
+-                    ? mealObject.get("strMeal").getAsString() : "";
+-            String category = mealObject.has("strCategory") && !mealObject.get("strCategory").isJsonNull()
+-                    ? mealObject.get("strCategory").getAsString() : "";
+-            String instructions = mealObject.has("strInstructions") && !mealObject.get("strInstructions").isJsonNull()
+-                    ? mealObject.get("strInstructions").getAsString() : "";
+-
+-            Map<String, String> ingredientMeasureMap = new HashMap<>();
+-            for (int j = 1; j <= 20; j++) {
+-                String ingredientKey = "strIngredient" + j;
+-                String measureKey = "strMeasure" + j;
+-
+-                String ingredient = mealObject.has(ingredientKey) && !mealObject.get(ingredientKey).isJsonNull()
+-                        ? mealObject.get(ingredientKey).getAsString() : "";
+-                String measure = mealObject.has(measureKey) && !mealObject.get(measureKey).isJsonNull()
+-                        ? mealObject.get(measureKey).getAsString() : "";
+-
+-                if (!ingredient.isEmpty()) {
+-                    ingredientMeasureMap.put(ingredient, measure);
+-                }
+-            }
+-
+-            CommonRecipe recipe = new CommonRecipe(id, name, category, instructions, ingredientMeasureMap);
+-            recipes.add(recipe);
+-        }
+-
+-        return recipes;
+-    }
+-
+-
+-    /**
+-     * Writes the list of recipes in JSON format to a file.
+-     *
+-     * @param recipes the list of recipes to write to the file
+-     */
+-    public void writeRecipesToFile(List<CommonRecipe> recipes) {
+-        System.out.println("Writing all recipes to JSON file.");
+-        final File file = new File(FILE_PATH);
+-
+-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+-        String jsonContent = gson.toJson(recipes);
+-
+-        try (FileWriter writer = new FileWriter(FILE_PATH)) {
+-            writer.write(jsonContent);
+-            System.out.println("All recipes data written to file successfully.");
+-        } catch (IOException e) {
+-            System.err.println("Error while writing to file: " + e.getMessage());
+-        }
+-    }
+-
+-    /**
+-     * Uploads the generated file to File.io API.
+-     */
+-    private void uploadFileToFileIo() {
+-        System.out.println("Uploading file to File.io with Bearer Auth.");
+-        try {
+-            final HttpClient client = HttpClient.newHttpClient();
+-            String bearerToken = "Meal Master"; // Replace this with your actual token
+-
+-            HttpRequest request = HttpRequest.newBuilder()
+-                    .uri(URI.create(FILE_IO_API_URL))
+-                    .header("Authorization", "Bearer " + bearerToken)
+-                    .header("Content-Type", "multipart/form-data; boundary=----WebKitFormBoundary")
+-                    .POST(ofFileUpload(Path.of(FILE_PATH)))
+-                    .build();
+-
+-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+-
+-            if (response.statusCode() == STATUS_CODE_OK) {
+-                System.out.println("File uploaded successfully: " + response.body());
+-                // Parse the response to extract the "key" value and set FILE_KEY
+-                JsonObject jsonResponse = JsonParser.parseString(response.body()).getAsJsonObject();
+-                FILE_KEY = jsonResponse.get("key").getAsString();
+-                System.out.println("File key set to: " + FILE_KEY);
+-            } else {
+-                System.err.println("Failed to upload file. Status code: " + response.statusCode());
+-                System.err.println("Response body: " + response.body());
+-            }
+-        } catch (IOException | InterruptedException e) {
+-            System.err.println("Error during file upload: " + e.getMessage());
+-            Thread.currentThread().interrupt();
+-        }
+-    }
+-
+-    /**
+-     * Constructs a multipart request body for file upload.
+-     *
+-     * @param path the path to the file to upload
+-     * @return a BodyPublisher for the multipart file upload
+-     * @throws IOException if there is an error reading the file
+-     */
+-    public static HttpRequest.BodyPublisher ofFileUpload(Path path) throws IOException {
+-        var boundary = "----WebKitFormBoundary";
+-        var fileBytes = Files.readAllBytes(path);
+-        var byteArrays = new ArrayList<byte[]>();
+-
+-        byteArrays.add(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"file\"; filename=\""
+-                + path.getFileName() + "\"\r\nContent-Type: application/json\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+-        byteArrays.add(fileBytes);
+-        byteArrays.add(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+-
+-        return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
+-    }
+-
+-    public void loadRecipesFromCloud() {
+-        if (FILE_KEY.isEmpty()) {
+-            System.err.println("File key is empty. Cannot download file.");
+-            return;
+-        }
+-
+-        System.out.println("Downloading file from File.io with key: " + FILE_KEY);
+-        try {
+-            String downloadUrl = FILE_IO_API_URL + "/" + URLEncoder.encode(FILE_KEY, StandardCharsets.UTF_8);
+-            HttpClient client = HttpClient.newHttpClient();
+-            HttpRequest request = HttpRequest.newBuilder()
+-                    .uri(URI.create(downloadUrl))
+-                    .GET()
+-                    .build();
+-
+-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+-
+-            if (response.statusCode() == STATUS_CODE_OK) {
+-                System.out.println("File downloaded successfully.");
+-
+-                // Log the entire JSON content received
+-                String jsonContent = response.body();
+-
+-                // Parse the downloaded JSON content
+-                parseDownloadedRecipes(jsonContent);
+-
+-            } else {
+-                System.err.println("Failed to download file. Status code: " + response.statusCode());
+-            }
+-        } catch (IOException | InterruptedException e) {
+-            System.err.println("Error during file download: " + e.getMessage());
+-            Thread.currentThread().interrupt();
+-        }
+-    }
+-
+-    private void parseDownloadedRecipes(String jsonContent) {
+-        System.out.println("Parsing downloaded recipes JSON.");
+-        JsonElement jsonElement = JsonParser.parseString(jsonContent);
+-
+-        if (jsonElement.isJsonArray()) {
+-            // If JSON is an array, proceed as usual
+-            JsonArray recipesArray = jsonElement.getAsJsonArray();
+-            System.out.println("JSON is an array. Processing array elements.");
+-            List<CommonRecipe> processedRecipes = processRecipesArray(recipesArray);
+-            System.out.println("Processed " + processedRecipes.size() + " recipes.");
+-        } else if (jsonElement.isJsonObject()) {
+-            // If JSON is a single object, wrap it in an array
+-            System.out.println("JSON is a single object. Wrapping in an array.");
+-            JsonArray recipesArray = new JsonArray();
+-            recipesArray.add(jsonElement.getAsJsonObject());
+-            List<CommonRecipe> processedRecipes = processRecipesArray(recipesArray);
+-            System.out.println("Processed " + processedRecipes.size() + " recipes.");
+-        } else {
+-            System.err.println("Unexpected JSON format: Not an array or object.");
+-            System.err.println("JSON content: " + jsonElement.toString()); // Print the raw JSON element
+-        }
+-    }
+-
+-    private List<CommonRecipe> processRecipesArray(JsonArray recipesArray) {
+-        List<CommonRecipe> processedRecipes = new ArrayList<>();
+-        cachedRecipes.clear(); // Clear previous data if any
+-
+-        for (int i = 0; i < recipesArray.size(); i++) {
+-            JsonElement element = recipesArray.get(i);
+-
+-            if (!element.isJsonObject()) {
+-                System.err.println("Unexpected element type at index " + i + ": " + element.getClass().getName());
+-                System.err.println("Element content: " + element.toString()); // Print the unexpected element
+-                continue; // Skip non-object elements
+-            }
+-
+-            JsonObject mealObject = element.getAsJsonObject();
+-
+-            // Use correct field names as per your JSON file (likely from MealDB API)
+-            String mealName = mealObject.has("name") && !mealObject.get("name").isJsonNull()
+-                    ? mealObject.get("name").getAsString() : null;
+-
+-            if (mealName == null || mealName.isEmpty()) {
+-                System.out.println("Skipping recipe with no valid name at index " + i + ", content: " + mealObject.toString());
+-                continue;
+-            }
+-
+-            String idNum = mealObject.has("id") && !mealObject.get("id").isJsonNull()
+-                    ? mealObject.get("id").getAsString() : "";
+-
+-            System.out.println("Processing recipe: ID = " + idNum + ", Name = " + mealName);
+-
+-            // Continue processing other fields as usual
+-            String category = mealObject.has("category") && !mealObject.get("category").isJsonNull()
+-                    ? mealObject.get("category").getAsString() : "";
+-            String instructions = mealObject.has("instructions") && !mealObject.get("instructions").isJsonNull()
+-                    ? mealObject.get("instructions").getAsString() : "";
+-
+-            // Parse the ingredientMeasureMap
+-            Map<String, String> ingredientMeasureMap = new HashMap<>();
+-            if (mealObject.has("ingredientMeasureMap") && !mealObject.get("ingredientMeasureMap").isJsonNull()) {
+-                JsonObject ingredientMapJson = mealObject.getAsJsonObject("ingredientMeasureMap");
+-
+-                // Iterate over all the keys in the ingredientMeasureMap JSON object
+-                for (String key : ingredientMapJson.keySet()) {
+-                    String measure = ingredientMapJson.has(key) && !ingredientMapJson.get(key).isJsonNull()
+-                            ? ingredientMapJson.get(key).getAsString()
+-                            : "";
+-                    ingredientMeasureMap.put(key, measure);
+-                }
+-            }
+-
+-            CommonRecipe recipe = new CommonRecipe(idNum, mealName, category, instructions, ingredientMeasureMap);
+-            processedRecipes.add(recipe);
+-        }
+-
+-        cachedRecipes.addAll(processedRecipes); // Cache processed recipes
+-        System.out.println("Total recipes loaded: " + processedRecipes.size());
+-        return processedRecipes;
+-    }
+-
+-    // Method to search recipes based on a keyword from cached recipes
+-    public List<CommonRecipe> searchRecipes(String keyword) {
+-        List<CommonRecipe> result = new ArrayList<>();
+-        keyword = keyword.toLowerCase();  // Convert keyword to lowercase
+-        System.out.println("Total cached recipes: " + cachedRecipes.size());
+-
+-        for (CommonRecipe recipe : cachedRecipes) {
+-            String recipeName = recipe.getName().toLowerCase();  // Convert recipe name to lowercase
+-            System.out.println("Checking recipe: " + recipe.getName() + " (Lowercase: " + recipeName + ")");
+-
+-            if (recipeName.contains(keyword)) {
+-                result.add(recipe);
+-                System.out.println("Match found: " + recipe.getName());
+-            }
+-        }
+-
+-        System.out.println("Found " + result.size() + " recipes matching keyword: " + keyword);
+-        return result;
+-    }
+-
+-
+-}
+-
+Index: src/main/java/interface_adapter/login/LoginPresenter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/interface_adapter/login/LoginPresenter.java b/src/main/java/interface_adapter/login/LoginPresenter.java
+--- a/src/main/java/interface_adapter/login/LoginPresenter.java	
++++ b/src/main/java/interface_adapter/login/LoginPresenter.java	(date 1731614119054)
+@@ -1,36 +1,38 @@
+ package interface_adapter.login;
+ 
+ import interface_adapter.ViewManagerModel;
+-import interface_adapter.recipe_search.RecipeSearchState;
+-import interface_adapter.recipe_search.RecipeSearchViewModel;
+-import interface_adapter.signup.SignupViewModel;
++import interface_adapter.change_password.LoggedInState;
++import interface_adapter.change_password.LoggedInViewModel;
+ import use_case.login.LoginOutputBoundary;
+ import use_case.login.LoginOutputData;
+-import view.RecipeSearchView;
+ 
+ /**
+  * The Presenter for the Login Use Case.
+  */
+ public class LoginPresenter implements LoginOutputBoundary {
+-    private final SignupViewModel signupViewModel;
++
+     private final LoginViewModel loginViewModel;
++    private final LoggedInViewModel loggedInViewModel;
+     private final ViewManagerModel viewManagerModel;
+-    private final RecipeSearchViewModel recipeSearchViewModel;
+ 
+     public LoginPresenter(ViewManagerModel viewManagerModel,
+-                          RecipeSearchViewModel recipeSearchViewModel,
+-                          LoginViewModel loginViewModel,
+-                          SignupViewModel signupViewModel) {
++                          LoggedInViewModel loggedInViewModel,
++                          LoginViewModel loginViewModel) {
+         this.viewManagerModel = viewManagerModel;
+-        this.recipeSearchViewModel = recipeSearchViewModel;
++        this.loggedInViewModel = loggedInViewModel;
+         this.loginViewModel = loginViewModel;
+-        this.signupViewModel = signupViewModel;
+     }
+ 
+     @Override
+     public void prepareSuccessView(LoginOutputData response) {
+         // On success, switch to the logged in view.
+-        this.viewManagerModel.setState(recipeSearchViewModel.getViewName());
++
++        final LoggedInState loggedInState = loggedInViewModel.getState();
++        loggedInState.setUsername(response.getUsername());
++        this.loggedInViewModel.setState(loggedInState);
++        this.loggedInViewModel.firePropertyChanged();
++
++        this.viewManagerModel.setState(loggedInViewModel.getViewName());
+         this.viewManagerModel.firePropertyChanged();
+     }
+ 
+@@ -40,9 +42,4 @@
+         loginState.setLoginError(error);
+         loginViewModel.firePropertyChanged();
+     }
+-
+-    public void switchToSignupView() {
+-        viewManagerModel.setState(signupViewModel.getViewName());
+-        viewManagerModel.firePropertyChanged();
+-    }
+ }
+Index: src/main/java/interface_adapter/login/LoginController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/interface_adapter/login/LoginController.java b/src/main/java/interface_adapter/login/LoginController.java
+--- a/src/main/java/interface_adapter/login/LoginController.java	
++++ b/src/main/java/interface_adapter/login/LoginController.java	(date 1731614119053)
+@@ -25,8 +25,4 @@
+ 
+         loginUseCaseInteractor.execute(loginInputData);
+     }
+-
+-    public void switchToSignupView() {
+-        loginUseCaseInteractor.switchToSignupView();
+-    }
+ }
+Index: src/main/java/interface_adapter/logout/LogoutPresenter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/interface_adapter/logout/LogoutPresenter.java b/src/main/java/interface_adapter/logout/LogoutPresenter.java
+--- a/src/main/java/interface_adapter/logout/LogoutPresenter.java	
++++ b/src/main/java/interface_adapter/logout/LogoutPresenter.java	(date 1731614119052)
+@@ -5,7 +5,6 @@
+ import interface_adapter.change_password.LoggedInViewModel;
+ import interface_adapter.login.LoginState;
+ import interface_adapter.login.LoginViewModel;
+-import interface_adapter.recipe_search.RecipeSearchViewModel;
+ import use_case.logout.LogoutOutputBoundary;
+ import use_case.logout.LogoutOutputData;
+ 
+@@ -14,31 +13,56 @@
+  */
+ public class LogoutPresenter implements LogoutOutputBoundary {
+ 
++    private LoggedInViewModel loggedInViewModel;
+     private ViewManagerModel viewManagerModel;
+     private LoginViewModel loginViewModel;
+ 
+     public LogoutPresenter(ViewManagerModel viewManagerModel,
+-                          RecipeSearchViewModel recipeSearchViewModel,
++                          LoggedInViewModel loggedInViewModel,
+                            LoginViewModel loginViewModel) {
+         // TODO: assign to the three instance variables.
++        this.loggedInViewModel = loggedInViewModel;
+         this.viewManagerModel = viewManagerModel;
+         this.loginViewModel = loginViewModel;
+     }
+ 
+     @Override
+-    public void prepareSuccessView() {
++    public void prepareSuccessView(LogoutOutputData response) {
++        // We need to switch to the login view, which should have
++        // an empty username and password.
++
++        // We also need to set the username in the LoggedInState to
++        // the empty string.
++
++        // TODO: have prepareSuccessView update the LoggedInState
++        // 1. get the LoggedInState out of the appropriate View Model,
++        // 2. set the username in the state to the empty string
++        // 3. set the state in the LoggedInViewModel to the updated state
++        // 4. firePropertyChanged so that the View that is listening is updated.
++        final LoggedInState loggedInState = loggedInViewModel.getState();
++        loggedInState.setUsername("");
++        this.loggedInViewModel.setState(loggedInState);
++        this.loggedInViewModel.firePropertyChanged();
++
++        // TODO: have prepareSuccessView update the LoginState
++        // 5. get the LoginState out of the appropriate View Model,
++        // 6. set the username and password in the state to the empty string
++        // 7. set the state in the LoginViewModel to the updated state
++        // 8. firePropertyChanged so that the View that is listening is updated.
+         final LoginState logInState = loginViewModel.getState();
+         logInState.setUsername("");
+         logInState.setPassword("");
+-
+         this.loginViewModel.setState(logInState);
+         this.loginViewModel.firePropertyChanged();
+ 
++        // This code tells the View Manager to switch to the LoginView.
+         this.viewManagerModel.setState(loginViewModel.getViewName());
+         this.viewManagerModel.firePropertyChanged();
+     }
+ 
+     @Override
+     public void prepareFailView(String error) {
++        // No need to add code here. We'll assume that logout can't fail.
++        // Thought question: is this a reasonable assumption?
+     }
+ }
+Index: src/main/java/interface_adapter/logout/LogoutController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/interface_adapter/logout/LogoutController.java b/src/main/java/interface_adapter/logout/LogoutController.java
+--- a/src/main/java/interface_adapter/logout/LogoutController.java	
++++ b/src/main/java/interface_adapter/logout/LogoutController.java	(date 1731614119051)
+@@ -17,8 +17,13 @@
+ 
+     /**
+      * Executes the Logout Use Case.
++     * @param username the username of the user logging in
+      */
+-    public void execute() {
+-        logoutUseCaseInteractor.execute();
++    public void execute(String username) {
++        // TODO: run the use case interactor for the logout use case
++        // 1. instantiate the `LogoutInputData`, which should contain the username.
++        // 2. tell the Interactor to execute.
++        final LogoutInputData logoutInputData = new LogoutInputData(username);
++        logoutUseCaseInteractor.execute(logoutInputData);
+     }
+ }
+Index: src/main/java/interface_adapter/signup/SignupPresenter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/interface_adapter/signup/SignupPresenter.java b/src/main/java/interface_adapter/signup/SignupPresenter.java
+--- a/src/main/java/interface_adapter/signup/SignupPresenter.java	
++++ b/src/main/java/interface_adapter/signup/SignupPresenter.java	(date 1731614119050)
+@@ -26,14 +26,6 @@
+     @Override
+     public void prepareSuccessView(SignupOutputData response) {
+         // On success, switch to the login view.
+-        final SignupState signupState = signupViewModel.getState();
+-        signupState.setUsername("");
+-        signupState.setPassword("");
+-        signupState.setRepeatPassword("");
+-
+-        this.signupViewModel.setState(signupState);
+-        this.signupViewModel.firePropertyChanged();
+-
+         final LoginState loginState = loginViewModel.getState();
+         loginState.setUsername(response.getUsername());
+         this.loginViewModel.setState(loginState);
+Index: src/main/java/interface_adapter/ViewModel.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/interface_adapter/ViewModel.java b/src/main/java/interface_adapter/ViewModel.java
+--- a/src/main/java/interface_adapter/ViewModel.java	
++++ b/src/main/java/interface_adapter/ViewModel.java	(date 1731613500882)
+@@ -30,15 +30,9 @@
+         return this.state;
+     }
+ 
+-//    public void setState(T state) {
+-//        this.state = state;
+-//    }
+-public void setState(T state) {
+-    T oldState = this.state;
+-    this.state = state;
+-    this.support.firePropertyChange("state", oldState, this.state);
+-}
+-
++    public void setState(T state) {
++        this.state = state;
++    }
+ 
+     /**
+      * Fires a property changed event for the state of this ViewModel.
+Index: src/main/java/interface_adapter/ViewManagerModel.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/interface_adapter/ViewManagerModel.java b/src/main/java/interface_adapter/ViewManagerModel.java
+--- a/src/main/java/interface_adapter/ViewManagerModel.java	
++++ b/src/main/java/interface_adapter/ViewManagerModel.java	(date 1731614119005)
+@@ -8,19 +8,7 @@
+ 
+     public ViewManagerModel() {
+         super("view manager");
+-        this.setState(""); // or "sign up" if that should be the default
+-        System.out.println("Initial ViewManagerModel state set to: " + this.getState());
+-        // Debug line
++        this.setState("");
+     }
+ 
+-    /**
+-     * Method to update the current active view name.
+-     * @param viewName The name of the view to switch to
+-     */
+-    public void switchToView(String viewName) {
+-
+-        this.setState(viewName);
+-        this.firePropertyChanged(); // 通知所有监听器状态已更改
+-    }
+ }
+-
+Index: src/main/java/interface_adapter/ReturnToSearchMenu/ReturnToSearchMenuPresenter.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/ReturnToSearchMenu/ReturnToSearchMenuPresenter.java b/src/main/java/interface_adapter/ReturnToSearchMenu/ReturnToSearchMenuPresenter.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/ReturnToSearchMenu/ReturnToSearchMenuPresenter.java	
++++ /dev/null	
+@@ -1,36 +0,0 @@
+-package interface_adapter.ReturnToSearchMenu;
+-
+-import interface_adapter.ViewManagerModel;
+-import interface_adapter.choose_recipe.ChooseRecipeState;
+-import interface_adapter.choose_recipe.ChooseRecipeViewModel;
+-import interface_adapter.recipe_search.RecipeSearchViewModel;
+-import use_case.ReturnToSearchMenu.ReturnToSearchMenuOutputBoundary;
+-import use_case.ReturnToSearchMenu.ReturnToSearchMenuOutputData;
+-import view.ChooseRecipeView;
+-
+-public class ReturnToSearchMenuPresenter implements ReturnToSearchMenuOutputBoundary {
+-
+-    private ViewManagerModel viewManagerModel;
+-    private RecipeSearchViewModel recipeSearchViewModel;
+-    private ChooseRecipeViewModel chooseRecipeViewModel;
+-
+-    public ReturnToSearchMenuPresenter(ViewManagerModel viewManagerModel,
+-                                       RecipeSearchViewModel recipeSearchViewModel,
+-                                       ChooseRecipeViewModel chooseRecipeViewModel) {
+-        this.viewManagerModel = viewManagerModel;
+-        this.recipeSearchViewModel = recipeSearchViewModel;
+-        this.chooseRecipeViewModel = chooseRecipeViewModel;
+-    }
+-
+-    @Override
+-    public void prepareSuccessView() {
+-        final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
+-        chooseRecipeState.setSearchKeyword("");
+-
+-        this.chooseRecipeViewModel.setState(chooseRecipeState);
+-        this.chooseRecipeViewModel.firePropertyChanged();
+-
+-        this.viewManagerModel.setState(recipeSearchViewModel.getViewName());
+-        this.viewManagerModel.firePropertyChanged();
+-    }
+-}
+Index: src/main/java/interface_adapter/ReturnToSearchMenu/ReturnToSearchMenuController.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/ReturnToSearchMenu/ReturnToSearchMenuController.java b/src/main/java/interface_adapter/ReturnToSearchMenu/ReturnToSearchMenuController.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/ReturnToSearchMenu/ReturnToSearchMenuController.java	
++++ /dev/null	
+@@ -1,17 +0,0 @@
+-package interface_adapter.ReturnToSearchMenu;
+-
+-import use_case.ReturnToSearchMenu.ReturnToSearchMenuInputBoundary;
+-import use_case.ReturnToSearchMenu.ReturnToSearchMenuInputData;
+-
+-public class ReturnToSearchMenuController {
+-
+-    private ReturnToSearchMenuInputBoundary returnToSearchMenuInteractor;
+-
+-    public ReturnToSearchMenuController(ReturnToSearchMenuInputBoundary returnToSearchMenuInteractor) {
+-        this.returnToSearchMenuInteractor = returnToSearchMenuInteractor;
+-    }
+-
+-    public void execute() {
+-        returnToSearchMenuInteractor.execute();
+-    }
+-}
+Index: src/main/java/interface_adapter/choose_recipe/ChooseRecipeState.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/choose_recipe/ChooseRecipeState.java b/src/main/java/interface_adapter/choose_recipe/ChooseRecipeState.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/choose_recipe/ChooseRecipeState.java	
++++ /dev/null	
+@@ -1,64 +0,0 @@
+-package interface_adapter.choose_recipe;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-
+-public class ChooseRecipeState {
+-    private String searchKeyword;
+-    private List<String> recipeNames; // List to store recipe names
+-    private String errorMessage; // Field to store error messages
+-
+-    // Default constructor
+-    public ChooseRecipeState() {
+-        this.recipeNames = new ArrayList<>();
+-        this.errorMessage = ""; // Initialize with an empty string
+-    }
+-
+-    // Copy constructor
+-    public ChooseRecipeState(ChooseRecipeState copy) {
+-        this.searchKeyword = copy.searchKeyword;
+-        this.recipeNames = new ArrayList<>(copy.recipeNames);
+-        this.errorMessage = copy.errorMessage;
+-    }
+-
+-    // Getter and Setter for searchKeyword
+-    public void setSearchKeyword(String searchKeyword) {
+-        this.searchKeyword = searchKeyword;
+-    }
+-
+-    public String getSearchKeyword() {
+-        return searchKeyword;
+-    }
+-
+-    // Getter and Setter for recipeNames
+-    public List<String> getRecipeNames() {
+-        return recipeNames;
+-    }
+-
+-    public void setRecipeNames(List<String> recipeNames) {
+-        this.recipeNames = recipeNames;
+-    }
+-
+-    // Helper method to add a single recipe name
+-    public void addRecipeName(String recipeName) {
+-        this.recipeNames.add(recipeName);
+-    }
+-
+-    // Getter and Setter for errorMessage
+-    public String getErrorMessage() {
+-        return errorMessage;
+-    }
+-
+-    public void setErrorMessage(String errorMessage) {
+-        this.errorMessage = errorMessage;
+-    }
+-
+-    // Method to clear the state
+-    public void clearState() {
+-        this.searchKeyword = "";
+-        this.recipeNames.clear();
+-        this.errorMessage = ""; // Clear the error message
+-    }
+-}
+-
+-
+Index: src/main/java/interface_adapter/choose_recipe/ChooseRecipePresenter.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/choose_recipe/ChooseRecipePresenter.java b/src/main/java/interface_adapter/choose_recipe/ChooseRecipePresenter.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/choose_recipe/ChooseRecipePresenter.java	
++++ /dev/null	
+@@ -1,40 +0,0 @@
+-package interface_adapter.choose_recipe;
+-
+-import java.util.List;
+-
+-public class ChooseRecipePresenter {
+-
+-    private final ChooseRecipeViewModel viewModel;
+-
+-    public ChooseRecipePresenter(ChooseRecipeViewModel viewModel) {
+-        this.viewModel = viewModel;
+-    }
+-
+-    /**
+-     * Prepares the recipe list view by updating the ViewModel with the given recipe names.
+-     * @param recipeNames the list of recipe names to be displayed in the view
+-     */
+-    public void presentRecipeList(List<String> recipeNames) {
+-        viewModel.getState().setRecipeNames(recipeNames);  // Update the recipe names in the view model state
+-        viewModel.firePropertyChanged();  // Notify any listeners that the view model has changed
+-    }
+-
+-    /**
+-     * Prepares the view for a selected recipe by setting the selected recipe name.
+-     * @param selectedRecipe the name of the selected recipe
+-     */
+-    public void presentSelectedRecipe(String selectedRecipe) {
+-        viewModel.getState().setSearchKeyword(selectedRecipe);  // Update the selected recipe in the view model state
+-        viewModel.firePropertyChanged();  // Notify any listeners that the view model has changed
+-    }
+-
+-    /**
+-     * Prepares a failure view if there is an error message to display.
+-     * @param errorMessage the error message to display in the view
+-     */
+-    public void presentError(String errorMessage) {
+-        viewModel.getState().setErrorMessage(errorMessage);  // Set an error message in the view model state
+-        viewModel.firePropertyChanged();  // Notify any listeners that the view model has changed
+-    }
+-}
+-
+Index: src/main/java/interface_adapter/choose_recipe/ChooseRecipeViewModel.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/choose_recipe/ChooseRecipeViewModel.java b/src/main/java/interface_adapter/choose_recipe/ChooseRecipeViewModel.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/choose_recipe/ChooseRecipeViewModel.java	
++++ /dev/null	
+@@ -1,46 +0,0 @@
+-package interface_adapter.choose_recipe;
+-
+-import interface_adapter.ViewModel;
+-import java.util.List;
+-
+-public class ChooseRecipeViewModel extends ViewModel<ChooseRecipeState> {
+-    public ChooseRecipeViewModel() {
+-        super("choose recipe");
+-        setState(new ChooseRecipeState());
+-    }
+-
+-    /**
+-     * Sets the list of recipe names in the ChooseRecipeState
+-     * and notifies any observers of the change.
+-     *
+-     * @param recipeNames the list of recipe names to display
+-     */
+-    public void setRecipeNames(List<String> recipeNames) {
+-        ChooseRecipeState currentState = getState();
+-        currentState.setRecipeNames(recipeNames);
+-        firePropertyChanged(); // Notify observers that the state has changed
+-    }
+-
+-    /**
+-     * Sets an error message in the ChooseRecipeState
+-     * and notifies any observers of the change.
+-     *
+-     * @param errorMessage the error message to display
+-     */
+-    public void setErrorMessage(String errorMessage) {
+-        ChooseRecipeState currentState = getState();
+-        currentState.setErrorMessage(errorMessage);
+-        firePropertyChanged(); // Notify observers of the error message change
+-    }
+-
+-    /**
+-     * Clears the current state, removing any search keywords, recipe names, and error messages.
+-     */
+-    public void clearState() {
+-        ChooseRecipeState currentState = getState();
+-        currentState.clearState();
+-        firePropertyChanged(); // Notify observers of the cleared state
+-    }
+-}
+-
+-
+Index: src/main/java/interface_adapter/choose_recipe/ChooseRecipeController.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/choose_recipe/ChooseRecipeController.java b/src/main/java/interface_adapter/choose_recipe/ChooseRecipeController.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/choose_recipe/ChooseRecipeController.java	
++++ /dev/null	
+@@ -1,41 +0,0 @@
+-package interface_adapter.choose_recipe;
+-
+-import interface_adapter.choose_recipe.ChooseRecipeViewModel;
+-
+-import java.util.List;
+-
+-public class ChooseRecipeController {
+-
+-    private final ChooseRecipeViewModel viewModel;
+-
+-    public ChooseRecipeController(ChooseRecipeViewModel viewModel) {
+-        this.viewModel = viewModel;
+-    }
+-
+-    /**
+-     * Sets the selected recipe name in the ViewModel.
+-     * @param recipeName the name of the selected recipe
+-     */
+-    public void selectRecipe(String recipeName) {
+-        viewModel.getState().setSearchKeyword(recipeName);  // Update view model state directly
+-        viewModel.firePropertyChanged(); // Notify the view of changes
+-    }
+-
+-    /**
+-     * Updates the list of recipe names in the ViewModel.
+-     * @param recipeNames the list of recipe names to display
+-     */
+-    public void updateRecipeList(List<String> recipeNames) {
+-        viewModel.getState().setRecipeNames(recipeNames);
+-        viewModel.firePropertyChanged();
+-    }
+-
+-    /**
+-     * Clears the selection or navigates back to the search view.
+-     */
+-    public void clearSelection() {
+-        viewModel.getState().setSearchKeyword("");  // Clear any selected recipe
+-        viewModel.firePropertyChanged();
+-    }
+-}
+-
+Index: src/main/java/interface_adapter/recipe_search/RecipeSearchState.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/recipe_search/RecipeSearchState.java b/src/main/java/interface_adapter/recipe_search/RecipeSearchState.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/recipe_search/RecipeSearchState.java	
++++ /dev/null	
+@@ -1,33 +0,0 @@
+-package interface_adapter.recipe_search;
+-
+-public class RecipeSearchState {
+-    private String searchKeyword = "";
+-    private String errorMessage = ""; // New field to store error messages
+-
+-    // Sets the search keyword for a successful search
+-    public void setSearchKeyWord(String searchKeyword) {
+-        this.searchKeyword = searchKeyword;
+-        this.errorMessage = ""; // Clear any error messages on new search
+-    }
+-
+-    public String getSearchKeyword() {
+-        return searchKeyword;
+-    }
+-
+-    // Sets an error message for a failed search
+-    public void setErrorMessage(String errorMessage) {
+-        this.errorMessage = errorMessage;
+-    }
+-
+-    public String getErrorMessage() {
+-        return errorMessage;
+-    }
+-
+-    // Clears the search keyword and error message
+-    public void clearState() {
+-        this.searchKeyword = "";
+-        this.errorMessage = "";
+-    }
+-}
+-
+-
+Index: src/main/java/interface_adapter/recipe_search/RecipeSearchPresenter.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/recipe_search/RecipeSearchPresenter.java b/src/main/java/interface_adapter/recipe_search/RecipeSearchPresenter.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/recipe_search/RecipeSearchPresenter.java	
++++ /dev/null	
+@@ -1,73 +0,0 @@
+-package interface_adapter.recipe_search;
+-
+-import interface_adapter.ViewManagerModel;
+-import interface_adapter.choose_recipe.ChooseRecipeState;
+-import interface_adapter.choose_recipe.ChooseRecipeViewModel;
+-import use_case.recipe_search.RecipeSearchOutputBoundary;
+-import use_case.recipe_search.RecipeSearchOutputData;
+-
+-import java.util.List;
+-import java.util.stream.Collectors;
+-
+-public class RecipeSearchPresenter implements RecipeSearchOutputBoundary {
+-    private final RecipeSearchViewModel recipeSearchViewModel;
+-    private final ChooseRecipeViewModel chooseRecipeViewModel;
+-    private final ViewManagerModel viewManagerModel;
+-
+-    public RecipeSearchPresenter(ViewManagerModel viewManagerModel,
+-                                 ChooseRecipeViewModel chooseRecipeViewModel,
+-                                 RecipeSearchViewModel recipeSearchViewModel) {
+-        this.viewManagerModel = viewManagerModel;
+-        this.chooseRecipeViewModel = chooseRecipeViewModel;
+-        this.recipeSearchViewModel = recipeSearchViewModel;
+-    }
+-
+-    @Override
+-    public void prepareSuccessView(RecipeSearchOutputData outputData) {
+-        final ChooseRecipeState chooseRecipeState = chooseRecipeViewModel.getState();
+-        final RecipeSearchState recipeSearchState = recipeSearchViewModel.getState();
+-
+-        // Clear any previous keyword or error message
+-        recipeSearchState.setSearchKeyWord("");
+-        recipeSearchState.setErrorMessage("");
+-        this.recipeSearchViewModel.firePropertyChanged();
+-
+-        // Check if there are results
+-        List<String> recipeNames = outputData.getRecipes().stream()
+-                .map(recipe -> recipe.getName())
+-                .collect(Collectors.toList());
+-
+-        if (recipeNames.isEmpty()) {
+-            recipeSearchState.setErrorMessage("No recipes found for the keyword.");
+-            this.recipeSearchViewModel.firePropertyChanged();
+-            viewManagerModel.setState(recipeSearchViewModel.getViewName());
+-        } else {
+-            chooseRecipeState.setSearchKeyword(outputData.getSearchKeyword());
+-            chooseRecipeState.setRecipeNames(recipeNames);
+-
+-            // Notify changes in ChooseRecipeState and switch view
+-            this.chooseRecipeViewModel.setState(chooseRecipeState);
+-            this.chooseRecipeViewModel.firePropertyChanged();
+-            this.viewManagerModel.setState(chooseRecipeViewModel.getViewName());
+-        }
+-        this.viewManagerModel.firePropertyChanged();
+-    }
+-
+-
+-    @Override
+-    public void prepareFailureView(String errorMessage) {
+-        // Set the error message in RecipeSearchState
+-        RecipeSearchState recipeSearchState = recipeSearchViewModel.getState();
+-        recipeSearchState.setErrorMessage(errorMessage);
+-
+-        // Notify the view model of the state change
+-        recipeSearchViewModel.setState(recipeSearchState);
+-        recipeSearchViewModel.firePropertyChanged();
+-
+-        // Optionally, update the view manager to reflect the failure state in the UI
+-        viewManagerModel.setState(recipeSearchViewModel.getViewName()); // Go to the search view with error
+-        viewManagerModel.firePropertyChanged();
+-    }
+-}
+-
+-
+Index: src/main/java/interface_adapter/recipe_search/RecipeSearchViewModel.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/recipe_search/RecipeSearchViewModel.java b/src/main/java/interface_adapter/recipe_search/RecipeSearchViewModel.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/recipe_search/RecipeSearchViewModel.java	
++++ /dev/null	
+@@ -1,29 +0,0 @@
+-package interface_adapter.recipe_search;
+-
+-import interface_adapter.ViewModel;
+-
+-public class RecipeSearchViewModel extends ViewModel<RecipeSearchState> {
+-    public RecipeSearchViewModel() {
+-        super("search recipe");
+-        setState(new RecipeSearchState());
+-    }
+-
+-    // Method to retrieve the current search keyword
+-    public String getSearchKeyword() {
+-        return getState().getSearchKeyword();
+-    }
+-
+-    // Method to retrieve the current error message
+-    public String getErrorMessage() {
+-        return getState().getErrorMessage();
+-    }
+-
+-    // Clear the state, useful for resetting after each search or handling new searches
+-    public void clearState() {
+-        getState().clearState();
+-        firePropertyChanged();
+-    }
+-}
+-
+-
+-
+Index: src/main/java/interface_adapter/recipe_search/RecipeSearchController.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/recipe_search/RecipeSearchController.java b/src/main/java/interface_adapter/recipe_search/RecipeSearchController.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/recipe_search/RecipeSearchController.java	
++++ /dev/null	
+@@ -1,30 +0,0 @@
+-package interface_adapter.recipe_search;
+-
+-import use_case.recipe_search.RecipeSearchInputBoundary;
+-import use_case.recipe_search.RecipeSearchInputData;
+-
+-/**
+- * Controller for the RecipeSearch Use Case.
+- */
+-public class RecipeSearchController {
+-    private final RecipeSearchInputBoundary recipeSearchInteractor;
+-
+-    public RecipeSearchController(RecipeSearchInputBoundary recipeSearchInteractor) {
+-        this.recipeSearchInteractor = recipeSearchInteractor;
+-    }
+-
+-    /**
+-     * Executes the Recipe Search Use Case.
+-     * @param searchKeyword the keyword user types to search for
+-     */
+-    public void execute(String searchKeyword) {
+-        // Create the input data for the search operation
+-        final RecipeSearchInputData recipeSearchInputData = new RecipeSearchInputData(searchKeyword);
+-
+-        // Perform the search operation through the interactor
+-        recipeSearchInteractor.execute(recipeSearchInputData);
+-
+-        System.out.println("Search button clicked with keyword: " + searchKeyword);
+-    }
+-}
+-
+Index: src/main/java/interface_adapter/edit_recipe/EditState.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/edit_recipe/EditState.java b/src/main/java/interface_adapter/edit_recipe/EditState.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/edit_recipe/EditState.java	
++++ /dev/null	
+@@ -1,24 +0,0 @@
+-package interface_adapter.edit_recipe;
+-
+-public class EditState {
+-    private boolean isAddButtonEnabled = true; // 默认为可用
+-    private boolean isBackButtonEnabled = true;
+-
+-    // Getters and Setters
+-    public boolean isAddButtonEnabled() {
+-        return isAddButtonEnabled;
+-    }
+-
+-    public void setAddButtonEnabled(boolean addButtonEnabled) {
+-        isAddButtonEnabled = addButtonEnabled;
+-    }
+-
+-    public boolean isBackButtonEnabled() {
+-        return isBackButtonEnabled;
+-    }
+-
+-    public void setBackButtonEnabled(boolean backButtonEnabled) {
+-        isBackButtonEnabled = backButtonEnabled;
+-    }
+-}
+-
+Index: src/main/java/interface_adapter/edit_recipe/EditRecipePresenter.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/edit_recipe/EditRecipePresenter.java b/src/main/java/interface_adapter/edit_recipe/EditRecipePresenter.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/edit_recipe/EditRecipePresenter.java	
++++ /dev/null	
+@@ -1,49 +0,0 @@
+-package interface_adapter.edit_recipe;
+-
+-import interface_adapter.ViewManagerModel;
+-import interface_adapter.recipe_search.RecipeSearchViewModel;
+-import use_case.edit_recipe.EditRecipeOutputBoundary;
+-
+-public class EditRecipePresenter implements EditRecipeOutputBoundary {
+-    private RecipeSearchViewModel recipeSearchViewModel; // the P3 viewmodel
+-    private EditRecipeViewModel editRecipeViewModel; // the P4
+-    private CreateRecipeViewModel createRecipeViewModel; // the P6
+-    private ViewManagerModel viewManagerModel;
+-
+-    public EditRecipePresenter(RecipeSearchViewModel recipeSearchViewModel,
+-                               EditRecipeViewModel editRecipeViewModel,
+-                               CreateRecipeViewModel createRecipeViewModel,
+-                               ViewManagerModel viewManagerModel) {
+-        this.recipeSearchViewModel = recipeSearchViewModel;
+-        this.editRecipeViewModel = editRecipeViewModel;
+-        this.createRecipeViewModel = createRecipeViewModel;
+-        this.viewManagerModel = viewManagerModel;
+-    }
+-
+-
+-
+-    @Override
+-    public void showEditScreen(){
+-        viewManagerModel.setState(editRecipeViewModel.getViewName());
+-        
+-        viewManagerModel.firePropertyChanged();
+-        // show P4
+-        System.out.println(" P3 to P4, in Presenter");
+-
+-    }
+-
+-    @Override
+-    public void showCreateRecipeScreen(){
+-        viewManagerModel.setState(createRecipeViewModel.getViewName());
+-        viewManagerModel.firePropertyChanged();
+-        // show P6
+-    }
+-
+-    @Override
+-    public void showMainMenu(){
+-        viewManagerModel.setState(recipeSearchViewModel.getViewName());
+-        viewManagerModel.firePropertyChanged();
+-        //show P3
+-    }
+-
+-}
+Index: src/main/java/interface_adapter/edit_recipe/EditRecipeController.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/edit_recipe/EditRecipeController.java b/src/main/java/interface_adapter/edit_recipe/EditRecipeController.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/edit_recipe/EditRecipeController.java	
++++ /dev/null	
+@@ -1,56 +0,0 @@
+-package interface_adapter.edit_recipe;
+-
+-import use_case.edit_recipe.EditRecipeInputBoundary;
+-
+-import javax.swing.*;
+-import java.awt.*;
+-
+-public class EditRecipeController {
+-
+-    private final EditRecipeInputBoundary editrecipeusecaseInteractor;
+-
+-
+-
+-    /**
+-     * Constructs an EditRecipeController with the specified interactor.
+-     *
+-     * @param editrecipeusecaseInteractor the interactor that implements the EditRecipeInputBoundary interface,
+-     *                                    which manages the core use case logic for editing recipes.
+-     */
+-    public EditRecipeController(EditRecipeInputBoundary editrecipeusecaseInteractor) {
+-        this.editrecipeusecaseInteractor = editrecipeusecaseInteractor;
+-
+-    }
+-
+-    /**
+-     * Switches the view from the Edit Recipe view (P4) to the Create Recipe view (P6).
+-     * This method is called when the user wants to add a new recipe, triggering the transition
+-     * to the Create Recipe screen.
+-     */
+-    public void switchToCreateRecipe() {
+-        System.out.println("Switching to Create Recipe view (P6) from Edit Recipe view (P4)");
+-        // P4 to P6
+-        editrecipeusecaseInteractor.switchToCreateRecipe();
+-    }
+-
+-    /**
+-     * Switches the view from the Edit Recipe view (P4) to the Main Menu view (P3).
+-     * This method is called when the user chooses to return to the main menu from the Edit Recipe screen.
+-     */
+-    public void switchToMainMenu() {
+-        System.out.println("Returning to Main Menu (P3) from Edit Recipe view (P4)");
+-        //P4 to P3
+-        editrecipeusecaseInteractor.switchToMainMenu();
+-    }
+-
+-    /**
+-     * Switches the view from the Main Menu view (P3) to the Edit Recipe view (P4).
+-     * This method is called when the user selects the "My Edit recipe" option from the main menu.
+-     */
+-    public void switchToEditRecipe() {
+-        System.out.println("Switching to Edit Recipe view (P4) from Main menu Recipe view (P3)，in controller");
+-        //P3 to P4
+-        editrecipeusecaseInteractor.switchToEditView();
+-    }
+-
+-}
+Index: src/main/java/interface_adapter/edit_recipe/CreateState.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/edit_recipe/CreateState.java b/src/main/java/interface_adapter/edit_recipe/CreateState.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/edit_recipe/CreateState.java	
++++ /dev/null	
+@@ -1,24 +0,0 @@
+-package interface_adapter.edit_recipe;
+-
+-public class CreateState {
+-    private boolean isBackButtonEnabled = true; // 默认设置为可用
+-    private boolean isConfirmButtonEnabled = true; // 默认设置为可用
+-
+-    // Getters and Setters
+-    public boolean isBackButtonEnabled() {
+-        return isBackButtonEnabled;
+-    }
+-
+-    public void setBackButtonEnabled(boolean backButtonEnabled) {
+-        isBackButtonEnabled = backButtonEnabled;
+-    }
+-
+-    public boolean isConfirmButtonEnabled() {
+-        return isConfirmButtonEnabled;
+-    }
+-
+-    public void setConfirmButtonEnabled(boolean confirmButtonEnabled) {
+-        isConfirmButtonEnabled = confirmButtonEnabled;
+-    }
+-}
+-
+Index: src/main/java/interface_adapter/edit_recipe/CreateRecipeViewModel.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/edit_recipe/CreateRecipeViewModel.java b/src/main/java/interface_adapter/edit_recipe/CreateRecipeViewModel.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/edit_recipe/CreateRecipeViewModel.java	
++++ /dev/null	
+@@ -1,10 +0,0 @@
+-package interface_adapter.edit_recipe;
+-
+-import interface_adapter.ViewModel;
+-
+-public class CreateRecipeViewModel extends ViewModel {
+-    public CreateRecipeViewModel() {
+-        super("Create Recipe");
+-        setState(new CreateState());
+-    }
+-}
+Index: src/main/java/interface_adapter/edit_recipe/EditRecipeViewModel.java
+===================================================================
+diff --git a/src/main/java/interface_adapter/edit_recipe/EditRecipeViewModel.java b/src/main/java/interface_adapter/edit_recipe/EditRecipeViewModel.java
+deleted file mode 100644
+--- a/src/main/java/interface_adapter/edit_recipe/EditRecipeViewModel.java	
++++ /dev/null	
+@@ -1,10 +0,0 @@
+-package interface_adapter.edit_recipe;
+-
+-import interface_adapter.ViewModel;
+-
+-public class EditRecipeViewModel extends ViewModel {
+-    public EditRecipeViewModel() {
+-        super("EditRecipe");
+-        setState(new EditState());
+-    }
+-}
+diff --git a/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInputBoundary.java b/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuInputBoundary.java
+deleted file mode 100644
+diff --git a/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuOutputBoundary.java b/src/main/java/use_case/ReturnToSearchMenu/ReturnToSearchMenuOutputBoundary.java
+deleted file mode 100644
