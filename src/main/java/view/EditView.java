@@ -24,6 +24,11 @@ public class EditView extends JPanel implements ActionListener, PropertyChangeLi
         // Set layout manager for main panel
         this.setLayout(new BorderLayout());
 
+        // Add label to the top (NORTH)
+        JLabel titleLabel = new JLabel("my edit recipe", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16)); // Adjust font as needed
+        this.add(titleLabel, BorderLayout.NORTH);
+
         // Upper part (empty, can add components if needed)
         JPanel upperPanel = new JPanel();
         upperPanel.setPreferredSize(new Dimension(400, 200)); // Adjust the height as needed
