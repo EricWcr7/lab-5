@@ -1,5 +1,7 @@
 package view;
 
+import interface_adapter.BackToEditView.BackToEditViewController;
+import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
 import interface_adapter.create.CreateController;
 import interface_adapter.create.CreateViewModel;
 
@@ -14,6 +16,8 @@ public class CreateView extends JPanel implements ActionListener, PropertyChange
     private final String viewName = "Create recipe";
     private final CreateViewModel createViewModel;
     private CreateController createController;
+    private BackToEditViewController backToEditViewController;
+
     private final JButton back;
     private final JButton confirm;
 
@@ -65,6 +69,12 @@ public class CreateView extends JPanel implements ActionListener, PropertyChange
         // Set action listeners if needed
         back.addActionListener(this);
         confirm.addActionListener(this);
+
+        back.addActionListener(evt -> {
+            if (evt.getSource().equals(back)) {
+                this.backToEditViewController.backToEditView();
+            }
+        });
     }
 
     @Override
@@ -84,4 +94,7 @@ public class CreateView extends JPanel implements ActionListener, PropertyChange
     public void setCreateController(CreateController createController) {
         this.createController = createController;
     }
-}
+
+    public void setBackToEditViewConTroller(BackToEditViewController backToEditViewConTroller) {
+        this.backToEditViewController = backToEditViewConTroller;
+}}

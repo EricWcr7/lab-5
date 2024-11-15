@@ -1,2 +1,6 @@
-package use_case.backToEditView;public interface backToEditViewInputBoundary {
+package use_case.BackToEditView;
+
+public interface BackToEditViewInputBoundary {
+
+    void backToEditRecipeView();
 }

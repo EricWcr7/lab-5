@@ -41,9 +41,9 @@ public class ReturnToSearchMenuPresenter implements ReturnToSearchMenuOutputBoun
 
     @Override
     public void fromEditRecipeBackToSearchMenu() {
-        final EditState favoriteRecipeState = editViewModel.getState();
+        final EditState editRecipeState = editViewModel.getState();
 
-        this.editViewModel.setState(favoriteRecipeState);
+        this.editViewModel.setState(editRecipeState);
         this.editViewModel.firePropertyChanged();
 
         this.viewManagerModel.setState(recipeSearchViewModel.getViewName());
