@@ -9,6 +9,8 @@ import data_access.InMemoryUserDataAccessObject;
 import data_access.RecipeDataAccessObject;
 import entity.*;
 import interface_adapter.*;
+import interface_adapter.BackToEditView.BackToEditViewController;
+import interface_adapter.BackToEditView.BackToEditViewPresenter;
 import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
 import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuPresenter;
 import interface_adapter.change_password.*;
@@ -26,6 +28,9 @@ import interface_adapter.recipe_search.*;
 import interface_adapter.signup.*;
 import interface_adapter.favorite_recipe.FavoriteRecipeController;
 import interface_adapter.favorite_recipe.FavoriteRecipePresenter;
+import use_case.BackToEditView.BackToEditViewInputBoundary;
+import use_case.BackToEditView.BackToEditViewInteractor;
+import use_case.BackToEditView.BackToEditViewOutputBoundary;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuInputBoundary;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuInteractor;
 import use_case.ReturnToSearchMenu.ReturnToSearchMenuOutputBoundary;
@@ -228,6 +233,18 @@ public class AppBuilder {
         final ReturnToSearchMenuController returnToSearchMenuController = new ReturnToSearchMenuController(returnToSearchMenuInteractor);
         chooseRecipeView.setReturnToSearchMenuController(returnToSearchMenuController);
         editView.setReturnToSearchMenuController(returnToSearchMenuController);
+        return this;
+    }
+
+    public AppBuilder addBackTOEditViewUsecase() {
+        final BackToEditViewOutputBoundary backToEditViewOutputBoundary = new BackToEditViewPresenter(viewManagerModel,
+                editViewModel, createViewModel);
+
+        final BackToEditViewInputBoundary backToEditViewInteractor =
+                new BackToEditViewInteractor(backToEditViewOutputBoundary);
+
+        final BackToEditViewController backToEditViewController = new BackToEditViewController(backToEditViewInteractor);
+        createView.setBackToEditViewConTroller(backToEditViewController);
         return this;
     }
 
