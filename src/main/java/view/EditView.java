@@ -1,5 +1,6 @@
 package view;
 
+import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
 import interface_adapter.create.CreateController;
 import interface_adapter.edit.EditController;
 import interface_adapter.edit.EditViewModel;
@@ -15,6 +16,7 @@ public class EditView extends JPanel implements ActionListener, PropertyChangeLi
     private final String viewName = "Edit recipe";
     private final EditViewModel editViewModel;
     private EditController editController;
+    private ReturnToSearchMenuController returnToSearchMenuController;
 
     private final JButton back;
     private final JButton addButton;
@@ -53,6 +55,12 @@ public class EditView extends JPanel implements ActionListener, PropertyChangeLi
         back.addActionListener(this);
         addButton.addActionListener(this);
 
+        back.addActionListener(evt -> {
+            if (evt.getSource().equals(back)) {
+                this.returnToSearchMenuController.fromEditRecipeBackToSearchMenu();
+            }
+        });
+
         addButton.addActionListener(
                 evt -> {
                     if (evt.getSource().equals(addButton)) {
@@ -78,5 +86,9 @@ public class EditView extends JPanel implements ActionListener, PropertyChangeLi
 
     public void setEditController(EditController editController) {
         this.editController = editController;
+    }
+
+    public void setReturnToSearchMenuController(ReturnToSearchMenuController returnToSearchMenuController) {
+        this.returnToSearchMenuController = returnToSearchMenuController;
     }
 }

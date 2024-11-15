@@ -220,13 +220,14 @@ public class AppBuilder {
     public AppBuilder addReturnToSearchMenuUseCase() {
         final ReturnToSearchMenuOutputBoundary returnToSearchMenuOutputBoundary =
                 new ReturnToSearchMenuPresenter(viewManagerModel,
-                        recipeSearchViewModel, chooseRecipeViewModel);
+                        recipeSearchViewModel, chooseRecipeViewModel, editViewModel);
 
         final ReturnToSearchMenuInputBoundary returnToSearchMenuInteractor =
                 new ReturnToSearchMenuInteractor(returnToSearchMenuOutputBoundary);
 
         final ReturnToSearchMenuController returnToSearchMenuController = new ReturnToSearchMenuController(returnToSearchMenuInteractor);
         chooseRecipeView.setReturnToSearchMenuController(returnToSearchMenuController);
+        editView.setReturnToSearchMenuController(returnToSearchMenuController);
         return this;
     }
 
