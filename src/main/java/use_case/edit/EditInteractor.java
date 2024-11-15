@@ -8,7 +8,7 @@ public class EditInteractor implements EditInputBoundary {
     }
 
     @Override
-    public void switchToEdit(){
-
+    public void switchToCreateView() {
+        editPresenter.showCreateView();
     }
 }

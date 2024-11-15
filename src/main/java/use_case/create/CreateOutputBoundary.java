@@ -1,2 +1,5 @@
-package use_case.create;public interface CreateOutputBoundary {
+package use_case.create;
+
+public interface CreateOutputBoundary {
+
 }

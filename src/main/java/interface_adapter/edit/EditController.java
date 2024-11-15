@@ -9,6 +9,7 @@ public class EditController {
         this.editInteractor = editInteractor;
     }
 
-    public void switchToEdit(){
+    public void switchToCreate(){
+        editInteractor.switchToCreateView();
     }
 }

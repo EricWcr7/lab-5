@@ -1,5 +1,6 @@
 package view;
 
+import interface_adapter.create.CreateController;
 import interface_adapter.edit.EditController;
 import interface_adapter.edit.EditViewModel;
 
@@ -14,6 +15,7 @@ public class EditView extends JPanel implements ActionListener, PropertyChangeLi
     private final String viewName = "Edit recipe";
     private final EditViewModel editViewModel;
     private EditController editController;
+
     private final JButton back;
     private final JButton addButton;
 
@@ -50,6 +52,14 @@ public class EditView extends JPanel implements ActionListener, PropertyChangeLi
         // Set action listeners if needed
         back.addActionListener(this);
         addButton.addActionListener(this);
+
+        addButton.addActionListener(
+                evt -> {
+                    if (evt.getSource().equals(addButton)) {
+                        this.editController.switchToCreate();
+                    }
+                }
+        );
     }
 
     @Override

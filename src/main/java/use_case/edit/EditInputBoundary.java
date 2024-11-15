@@ -2,6 +2,6 @@ package use_case.edit;
 
 public interface EditInputBoundary {
 
-    void switchToEdit();
-    // from P3 to P4
+    void switchToCreateView();
+    // from P4 to P6
 }

@@ -2,6 +2,6 @@ package use_case.edit;
 
 public interface EditOutputBoundary {
 
-    void showEditView();
+    void showCreateView();
     // show P4
 }
