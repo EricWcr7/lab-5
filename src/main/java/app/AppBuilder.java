@@ -13,6 +13,8 @@ import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuController;
 import interface_adapter.ReturnToSearchMenu.ReturnToSearchMenuPresenter;
 import interface_adapter.change_password.*;
 import interface_adapter.choose_recipe.*;
+import interface_adapter.create.CreatePresenter;
+import interface_adapter.create.CreateViewModel;
 import interface_adapter.display_recipe.DisplayRecipeViewModel;
 import interface_adapter.edit.EditController;
 import interface_adapter.edit.EditPresenter;
@@ -31,6 +33,7 @@ import use_case.change_password.*;
 import use_case.choose_recipe.ChooseRecipeInputBoundary;
 import use_case.choose_recipe.ChooseRecipeInteractor;
 import use_case.choose_recipe.ChooseRecipeOutputBoundary;
+import use_case.create.CreateOutputBoundary;
 import use_case.edit.EditInputBoundary;
 import use_case.edit.EditInteractor;
 import use_case.edit.EditOutputBoundary;
@@ -70,6 +73,8 @@ public class AppBuilder {
     private FavoriteRecipeViewModel favoriteRecipeViewModel;
     private EditView editView;
     private EditViewModel editViewModel;
+    private CreateView createView;
+    private CreateViewModel createViewModel;
 
     private RecipeSearchInteractor recipeSearchInteractor;
 
@@ -154,6 +159,14 @@ public class AppBuilder {
         editView = new EditView(editViewModel);
         System.out.println("Adding Edit View with name: " + editView.getViewName());
         cardPanel.add(editView, editView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addCreateView() {
+        createViewModel = new CreateViewModel();
+        createView = new CreateView(createViewModel);
+        System.out.println("Adding Create View with name: " + createView.getViewName());
+        cardPanel.add(createView, createView.getViewName());
         return this;
     }
 
@@ -253,7 +266,7 @@ public class AppBuilder {
     }
 
     public AppBuilder addEditUseCase() {
-        final EditOutputBoundary editOutputBoundary = new EditPresenter(viewManagerModel, editViewModel);
+        final EditOutputBoundary editOutputBoundary = new EditPresenter(viewManagerModel, createViewModel, editViewModel);
 
         final EditInputBoundary editInteractor = new EditInteractor(editOutputBoundary);
 
